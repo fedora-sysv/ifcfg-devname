@@ -1,5 +1,8 @@
 use clap::{App, Arg};
 
+// https://stackoverflow.com/a/45176487
+const DEFAULT_ROOT_PATH: &str = "/";
+
 fn main() {
     let matches = App::new("rename_device")
         .version("1.0")
@@ -14,7 +17,7 @@ fn main() {
                 .value_name("HWADDR_INPUT")
                 .takes_value(true)
                 .required(true)
-                .about("Sets a custom config file"),
+                .about("Hardware address of device which is going to be look for. This option is required."),
         )
         .arg(
             Arg::new("root")
@@ -23,21 +26,21 @@ fn main() {
                 .value_name("ROOT_PATH")
                 .takes_value(true)
                 .required(false)
-                .about("Sets a custom config file"),
+                .about("Allows to set custom path where to look for configuration. If not set, defaults to '/'."),
         )
         .arg(
             Arg::new("verbose")
                 .short('v')
                 .long("verbose")
                 .takes_value(false)
-                .about("Sets a custom config file"),
+                .about("More verbose output"),
         )
         .arg(
             Arg::new("silent")
                 .short('s')
                 .long("silent")
                 .takes_value(false)
-                .about("Sets a custom config file"),
+                .about("Silet output"),
         )
         .get_matches();
 
