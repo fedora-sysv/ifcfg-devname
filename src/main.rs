@@ -17,6 +17,15 @@ fn main() {
                 .about("Sets a custom config file"),
         )
         .arg(
+            Arg::new("root")
+                .short('r')
+                .long("root")
+                .value_name("ROOT_PATH")
+                .takes_value(true)
+                .required(false)
+                .about("Sets a custom config file"),
+        )
+        .arg(
             Arg::new("verbose")
                 .short('v')
                 .long("verbose")
