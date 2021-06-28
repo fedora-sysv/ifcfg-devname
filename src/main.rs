@@ -4,7 +4,12 @@ use clap::{App, Arg};
 const DEFAULT_ROOT_PATH: &str = "/";
 
 fn main() {
-    let matches = App::new("rename_device")
+    let matches: clap::ArgMatches;
+    let hw_addr: String;
+    let root_path: String;
+    let is_verbose_disabled: bool;
+    
+    matches = App::new("rename_device")
         .version("1.0")
         .author("Macku Jan <jamacku@redhat.com>")
         .about("Does awesome things")
@@ -28,25 +33,18 @@ fn main() {
                 .required(false)
                 .about("Allows to set custom path where to look for configuration. If not set, defaults to '/'."),
         )
-        .arg(
-            Arg::new("verbose")
-                .short('v')
-                .long("verbose")
-                .takes_value(false)
-                .about("More verbose output"),
-        )
-        .arg(
-            Arg::new("silent")
-                .short('s')
-                .long("silent")
-                .takes_value(false)
-                .about("Silet output"),
-        )
         .get_matches();
 
     /* Check HWADDR */
     if let Some(o) = matches.value_of("hwaddr") {
-        println!("Value for HWADDR: {}", o);
+        hw_addr = o.to_string();
+        println!("Value for HWADDR: {}", hw_addr);
+    }
+
+    /* Check ROOT_PATH */
+    if let Some(o) = matches.value_of("root") {
+        root_path = o.to_string();
+        println!("Value for ROOT_PATH: {}", root_path);
     }
 
     // TODO: rename_device logic...
