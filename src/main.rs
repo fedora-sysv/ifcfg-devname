@@ -5,9 +5,9 @@ const DEFAULT_ROOT_PATH: &str = "/";
 
 fn main() {
     let matches: clap::ArgMatches;
+
     let hw_addr: String;
     let root_path: String;
-    let is_verbose_disabled: bool;
     
     matches = App::new("rename_device")
         .version("1.0")
@@ -48,4 +48,14 @@ fn main() {
     }
 
     // TODO: rename_device logic...
+
+    // ? READ INTERFACE env of arg
+    // ? If it is not present EXIT
+
+    // ? get mac address of given interfaces
+
+    // ? SCAN config dir /etc/sysconfig/network-scripts
+    // ? iterate over them and get DEVICE, SUBCHANNELS, HWADDR and VLAN
+
+    // ? print out correct name of interface
 }

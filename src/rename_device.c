@@ -40,10 +40,10 @@
 
 #define LOCKFILE "/dev/.rename_device.lock"
 
-void sighandler(int dummy) {
-	unlink(LOCKFILE);
-	_exit(1);
-}
+// void sighandler(int dummy) {
+// 	unlink(LOCKFILE);
+// 	_exit(1);
+// }
 
 struct netdev {
 	char *hwaddr;
@@ -317,61 +317,61 @@ char *get_cmdline_by_hwaddr(char *hwaddr) {
 	return name;
 }
 
-void take_lock() {
-	int count = 0;
-	int lockfd;
-	ssize_t ignored_retval __attribute__((unused));
+// void take_lock() {
+// 	int count = 0;
+// 	int lockfd;
+// 	ssize_t ignored_retval __attribute__((unused));
 	
-	while (1) {
-		lockfd = open(LOCKFILE, O_RDWR|O_CREAT|O_EXCL, 0644);
-		if (lockfd != -1) {
-			char buf[32];
+// 	while (1) {
+// 		lockfd = open(LOCKFILE, O_RDWR|O_CREAT|O_EXCL, 0644);
+// 		if (lockfd != -1) {
+// 			char buf[32];
 
-			snprintf(buf,32,"%d\n",getpid());
-			ignored_retval = write(lockfd,buf,strlen(buf));
-			close(lockfd);
-			break;
-		} else if (errno == EACCES)
-                        break;
+// 			snprintf(buf,32,"%d\n",getpid());
+// 			ignored_retval = write(lockfd,buf,strlen(buf));
+// 			close(lockfd);
+// 			break;
+// 		} else if (errno == EACCES)
+//                         break;
 
-		count++;
-		/* If we've slept for 20 seconds, break the lock. */
-		if (count >= 200) {
-			int fd;
-			char buf[32];
-			int pid;
+// 		count++;
+// 		/* If we've slept for 20 seconds, break the lock. */
+// 		if (count >= 200) {
+// 			int fd;
+// 			char buf[32];
+// 			int pid;
 				
-			fd = open(LOCKFILE, O_RDONLY);
-			if (fd == -1)
-				break;
-			ignored_retval = read(fd,buf,32);
-			close(fd);
-			pid = atoi(buf);
-			if (pid && pid != 1) {
-				kill(pid,SIGKILL);
-			}
-		}
-		usleep(100000);
-		continue;
+// 			fd = open(LOCKFILE, O_RDONLY);
+// 			if (fd == -1)
+// 				break;
+// 			ignored_retval = read(fd,buf,32);
+// 			close(fd);
+// 			pid = atoi(buf);
+// 			if (pid && pid != 1) {
+// 				kill(pid,SIGKILL);
+// 			}
+// 		}
+// 		usleep(100000);
+// 		continue;
 
-	}
-	return;
-}
+// 	}
+// 	return;
+// }
 
 int main(int argc, char **argv) {
 	char *src, *target, *hw;
-	struct timeval tv;
+	// struct timeval tv;
 
-	gettimeofday(&tv, NULL);
-	srand(tv.tv_usec);	
-	take_lock();
+	// gettimeofday(&tv, NULL);
+	// srand(tv.tv_usec);	
+	// take_lock();
 	
-	signal(SIGSEGV,sighandler);
-	signal(SIGKILL,sighandler);
-	signal(SIGTERM,sighandler);
-	signal(SIGSEGV,sighandler);
-	signal(SIGALRM,sighandler);
-	alarm(10);
+	// signal(SIGSEGV,sighandler);
+	// signal(SIGKILL,sighandler);
+	// signal(SIGTERM,sighandler);
+	// signal(SIGSEGV,sighandler);
+	// signal(SIGALRM,sighandler);
+	// alarm(10);
 	
 	src = getenv("INTERFACE");
 	if (!src)
@@ -391,6 +391,6 @@ int main(int argc, char **argv) {
 	printf("%s", target);
 	
 out_unlock:
-	unlink(LOCKFILE);
+	// unlink(LOCKFILE);
 	exit(0);
 }
