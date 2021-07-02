@@ -1,58 +1,56 @@
-use clap::{App, Arg};
+use clap::App;
+use std::env;
 
-// https://stackoverflow.com/a/45176487
-const DEFAULT_ROOT_PATH: &str = "/";
+use mac_address::{
+    mac_address_by_name,
+    MacAddress
+};
+
+const ENV: &str = "INTERFACE";
 
 fn main() {
-    let matches: clap::ArgMatches;
+    let kernel_if_name: String;
+    let mac_address: MacAddress; 
 
-    let hw_addr: String;
-    let root_path: String;
-    
-    matches = App::new("rename_device")
-        .version("1.0")
+    App::new("rename_device")
         .author("Macku Jan <jamacku@redhat.com>")
         .about("Does awesome things")
-        // *NOTE:* Doesn't work right now...
-        //.license("MIT OR Apache-2.0")
-        .arg(
-            Arg::new("hwaddr")
-                .short('m')
-                .long("hwaddr")
-                .value_name("HWADDR_INPUT")
-                .takes_value(true)
-                .required(true)
-                .about("Hardware address of device which is going to be look for. This option is required."),
-        )
-        .arg(
-            Arg::new("root")
-                .short('r')
-                .long("root")
-                .value_name("ROOT_PATH")
-                .takes_value(true)
-                .required(false)
-                .about("Allows to set custom path where to look for configuration. If not set, defaults to '/'."),
-        )
         .get_matches();
 
-    /* Check HWADDR */
-    if let Some(o) = matches.value_of("hwaddr") {
-        hw_addr = o.to_string();
-        println!("Value for HWADDR: {}", hw_addr);
-    }
+    /* Read env variable INTERFACE in order to get names of if */
+    kernel_if_name = match env::var_os(ENV) {
+        Some(val) => {
+            println!("{}: {:?}", ENV, val);
+            match val.into_string() {
+                Ok(val) => val,
+                _ => {
+                    eprintln!("Error whille procesing env INTERFACE: {}.", ENV);
+                    std::process::exit(1);
+                }
+            }
+        },
+        None => {
+            eprintln!("{} is not defined in the environment.", ENV);
+            std::process::exit(1);
+        }
+    };
 
-    /* Check ROOT_PATH */
-    if let Some(o) = matches.value_of("root") {
-        root_path = o.to_string();
-        println!("Value for ROOT_PATH: {}", root_path);
-    }
-
-    // TODO: rename_device logic...
-
-    // ? READ INTERFACE env of arg
-    // ? If it is not present EXIT
-
-    // ? get mac address of given interfaces
+    /* Get MAC addres of given interface */
+    mac_address = match mac_address_by_name(&kernel_if_name) {
+        Ok(val) => {
+            match val {
+                Some(val) => val,
+                None => {
+                    eprintln!("Error whille getting MAC address of current if: {}.", kernel_if_name);
+                    std::process::exit(1);
+                }
+            }
+        },
+        _ => {
+            eprintln!("Error whille getting MAC address of current if: {}.", kernel_if_name);
+            std::process::exit(1);
+        }
+    };
 
     // ? SCAN config dir /etc/sysconfig/network-scripts
     // ? iterate over them and get DEVICE, SUBCHANNELS, HWADDR and VLAN
