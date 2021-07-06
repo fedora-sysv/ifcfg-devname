@@ -52,6 +52,8 @@ fn main() {
         }
     };
 
+    println!("MAC address of {} is: {}", kernel_if_name, mac_address);
+
     // ? SCAN config dir /etc/sysconfig/network-scripts
     // ? iterate over them and get DEVICE, SUBCHANNELS, HWADDR and VLAN
 
