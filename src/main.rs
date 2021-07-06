@@ -1,5 +1,8 @@
-use clap::App;
 use std::env;
+use std::fs::{self, DirEntry};
+use std::path::Path;
+
+use clap::App;
 
 use mac_address::{
     mac_address_by_name,
@@ -7,10 +10,12 @@ use mac_address::{
 };
 
 const ENV: &str = "INTERFACE";
+const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
 
 fn main() {
     let kernel_if_name: String;
-    let mac_address: MacAddress; 
+    let mac_address: MacAddress;
+    let config_dir: &Path = Path::new(CONFIG_DIR);
 
     App::new("rename_device")
         .author("Macku Jan <jamacku@redhat.com>")
@@ -56,6 +61,23 @@ fn main() {
 
     // ? SCAN config dir /etc/sysconfig/network-scripts
     // ? iterate over them and get DEVICE, SUBCHANNELS, HWADDR and VLAN
+
+    // file ifcfg-** ?? or directory !!
+    // contain HWADDR = MAC
+    // return NAME = ??
+
+    if config_dir.is_dir() {
+        for entry in fs::read_dir(config_dir) {
+            println!("entry: {:?}", entry);
+            /*let entry = entry;
+            let path = entry.path();
+            if path.is_dir() {
+                visit_dirs(&path, cb)?;
+            } else {
+                cb(&entry);
+            }*/
+        }
+    }
 
     // ? print out correct name of interface
 }
