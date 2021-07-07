@@ -3,12 +3,12 @@ use std::path::Path;
 
 use clap::App;
 
-use mac_address::{
-    mac_address_by_name,
-    MacAddress
-};
+use mac_address::MacAddress;
 
-use rename_device::read_env_interface;
+use rename_device::{
+    read_env_interface,
+    get_mac_address
+};
 
 const ENV: &str = "INTERFACE";
 const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
@@ -25,25 +25,14 @@ fn main() {
 
     /* Read env variable INTERFACE in order to get names of if */
     kernel_if_name = match read_env_interface(ENV) {
-        Some(val) => {
-            println!("{}: {:?}", ENV, val);
-            val
-        },
+        Some(val) => val,
         None => std::process::exit(1)
     };
 
     /* Get MAC addres of given interface */
-    mac_address = match mac_address_by_name(&kernel_if_name) {
-        Ok(val) => {
-            match val {
-                Some(val) => val,
-                None => {
-                    eprintln!("Error whille getting MAC address of current if: {}.", kernel_if_name);
-                    std::process::exit(1);
-                }
-            }
-        },
-        _ => {
+    mac_address = match get_mac_address(&kernel_if_name) {
+        Some(val) => val,
+        None => {
             eprintln!("Error whille getting MAC address of current if: {}.", kernel_if_name);
             std::process::exit(1);
         }
