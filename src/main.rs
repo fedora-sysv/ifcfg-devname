@@ -9,6 +9,11 @@ use mac_address::{
     MacAddress
 };
 
+use glob::{
+    MatchOptions,
+    glob_with
+};
+
 
 // --- --- --- //
 
@@ -52,18 +57,7 @@ fn main() {
     // contain HWADDR = MAC
     // return NAME = ??
 
-    if config_dir.is_dir() {
-        for entry in fs::read_dir(config_dir) {
-            println!("entry: {:?}", entry);
-            /*let entry = entry;
-            let path = entry.path();
-            if path.is_dir() {
-                visit_dirs(&path, cb)?;
-            } else {
-                cb(&entry);
-            }*/
-        }
-    }
+    scan_config_dir(config_dir);
 
     // ? print out correct name of interface
 }
@@ -99,3 +93,23 @@ fn get_mac_address(if_name: &str) -> Option<MacAddress> {
         }
     }
 }
+
+fn scan_config_dir(config_dir: &Path) {
+    let glob_options: MatchOptions;
+    
+    glob_options = glob::MatchOptions {
+        case_sensitive: true,
+        require_literal_separator: false,
+        require_literal_leading_dot: false,
+    };
+
+    for entry in glob_with(config_dir.to_str().unwrap(), glob_options).unwrap() {
+        if let Ok(path) = entry {
+            println!("{:?}", path.display());
+        }
+    }
+}
+
+// fn is_file_ifcfg_file() -> {
+
+// }
