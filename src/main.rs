@@ -1,5 +1,4 @@
 use std::env;
-use std::fs::{self, DirEntry};
 use std::path::Path;
 
 use clap::App;
@@ -94,22 +93,45 @@ fn get_mac_address(if_name: &str) -> Option<MacAddress> {
     }
 }
 
-fn scan_config_dir(config_dir: &Path) {
+/* Scan directory /etc/sysconfig/network-scripts for ifcfg files */
+fn scan_config_dir(config_dir: &Path) -> Option<String> {
     let glob_options: MatchOptions;
-    
+    let glob_patern: String;
+    let mut device_config_name: String = String::new();
+
     glob_options = glob::MatchOptions {
         case_sensitive: true,
         require_literal_separator: false,
         require_literal_leading_dot: false,
     };
 
-    for entry in glob_with(config_dir.to_str().unwrap(), glob_options).unwrap() {
-        if let Ok(path) = entry {
-            println!("{:?}", path.display());
-        }
+    glob_patern = config_dir.to_str().unwrap().to_owned() + "/ifcfg-*";
+
+    for entry in glob_with(&glob_patern, glob_options).unwrap() {
+        match entry {
+            Ok(path) => {
+                let config_file_path: &Path = Path::new(path.as_path());
+                match scan_config_file(config_file_path) {
+                    Some(name) => {
+                        device_config_name = format!("{}", name);
+                        break;
+                    }
+                    _ => continue
+                }
+            },
+            _ => continue
+        };
+    }
+
+    if !device_config_name.is_empty() {
+        Some(device_config_name)
+    } else {
+        None
     }
 }
 
-// fn is_file_ifcfg_file() -> {
-
-// }
+/* Scan ifcfg files and look for given HWADDR and return DEVICE name */
+fn scan_config_file(config_file: &Path) -> Option<String> {
+    println!("config: {}", config_file.display());
+    Some("s".to_owned())
+}
