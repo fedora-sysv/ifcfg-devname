@@ -1,4 +1,3 @@
-use std::env;
 use std::fs::{self, DirEntry};
 use std::path::Path;
 
@@ -8,6 +7,8 @@ use mac_address::{
     mac_address_by_name,
     MacAddress
 };
+
+use rename_device::read_env_interface;
 
 const ENV: &str = "INTERFACE";
 const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
@@ -23,21 +24,12 @@ fn main() {
         .get_matches();
 
     /* Read env variable INTERFACE in order to get names of if */
-    kernel_if_name = match env::var_os(ENV) {
+    kernel_if_name = match read_env_interface(ENV) {
         Some(val) => {
             println!("{}: {:?}", ENV, val);
-            match val.into_string() {
-                Ok(val) => val,
-                _ => {
-                    eprintln!("Error whille procesing env INTERFACE: {}.", ENV);
-                    std::process::exit(1);
-                }
-            }
+            val
         },
-        None => {
-            eprintln!("{} is not defined in the environment.", ENV);
-            std::process::exit(1);
-        }
+        None => std::process::exit(1)
     };
 
     /* Get MAC addres of given interface */
