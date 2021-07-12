@@ -1,7 +1,7 @@
 use std::env;
 use std::path::Path;
 use std::fs::File;
-use std::io::{self, prelude::*, BufReader};
+use std::io::{prelude::*, BufReader};
 
 use clap::App;
 
@@ -136,19 +136,29 @@ fn scan_config_file(config_file: &Path) -> Option<String> {
     let reader = BufReader::new(file);
 
     lazy_static! {
-        static ref RE: Regex = Regex::new(r"^DEVICE=").unwrap();
+        /* look for line that starts with DEVICE= and then store everything else in group */
+        static ref REGEX_DEVICE: Regex = Regex::new(r"^DEVICE=(.*)").unwrap();
+
+        /* look for line with mac address and store its value in group for later */
+        static ref REGEX_HWADDR: Regex = Regex::new(r"^HWADDR=(.*)").unwrap();
     }
 
+    /* Read lines of given file and look for DEVICE= and HWADDR= */
     for line in reader.lines(){
         let line = line.unwrap();
 
-        if RE.is_match(&line){
-            println!("{}", line);
+        if REGEX_HWADDR.is_match(&line){
+            for capture in REGEX_HWADDR.captures_iter(&line) {
+                println!("mac: {}", &capture[1]);
+            }
         }
 
-        // if line.contains("DEVICE="){
-        //     println!("{}", line);
-        // }
+        if REGEX_DEVICE.is_match(&line){
+            for capture in REGEX_DEVICE.captures_iter(&line) {
+                println!("name: {}", &capture[1]);
+            }
+        }
+
     }
 
     Some("s".to_owned())
