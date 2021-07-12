@@ -1,7 +1,10 @@
 use std::env;
 use std::path::Path;
 use std::fs::File;
-use std::io::{prelude::*, BufReader};
+use std::io::{
+    prelude::*,
+    BufReader
+};
 
 use clap::App;
 
@@ -30,7 +33,8 @@ const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
 fn main() {
     let kernel_if_name: String;
     let mac_address: MacAddress;
-    let config_dir: &Path = Path::new(CONFIG_DIR);
+    let config_dir: &Path;
+    let list_of_ifcfg_paths: Vec<String>;
 
     App::new("rename_device")
         .author("Macku Jan <jamacku@redhat.com>")
@@ -54,7 +58,17 @@ fn main() {
 
     println!("MAC address of {} is: {}", kernel_if_name, mac_address);    
 
-    scan_config_dir(config_dir);
+    /* Scan config dir and look for ifcfg-* files */
+    config_dir = Path::new(CONFIG_DIR);
+    list_of_ifcfg_paths = match scan_config_dir(config_dir) {
+        Some(val) => val,
+        None => {
+            eprintln!("Error whille getting list of ifcfg files in directory: {}.", config_dir.display());
+            std::process::exit(1);
+        }
+    };
+
+    println!("list of configs: {:?}", list_of_ifcfg_paths);
 
     // ? print out correct name of interface
 }
@@ -92,10 +106,10 @@ fn get_mac_address(if_name: &str) -> Option<MacAddress> {
 }
 
 /* Scan directory /etc/sysconfig/network-scripts for ifcfg files */
-fn scan_config_dir(config_dir: &Path) -> Option<String> {
+fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
     let glob_options: MatchOptions;
     let glob_patern: String;
-    let mut device_config_name: String = String::new();
+    let mut list_of_config_paths: Vec<String>;
 
     glob_options = glob::MatchOptions {
         case_sensitive: true,
@@ -105,24 +119,27 @@ fn scan_config_dir(config_dir: &Path) -> Option<String> {
 
     glob_patern = config_dir.to_str().unwrap().to_owned() + "/ifcfg-*";
 
+    list_of_config_paths = vec![];
+
     for entry in glob_with(&glob_patern, glob_options).unwrap() {
         match entry {
             Ok(path) => {
-                let config_file_path: &Path = Path::new(path.as_path());
-                match scan_config_file(config_file_path) {
-                    Some(name) => {
-                        device_config_name = format!("{}", name);
-                        break;
-                    }
-                    _ => continue
-                }
+                list_of_config_paths.push(path.to_str().unwrap().to_owned());
+                // let config_file_path: &Path = Path::new(path.as_path());
+                // match scan_config_file(config_file_path) {
+                //     Some(name) => {
+                //         device_config_name = format!("{}", name);
+                //         break;
+                //     }
+                //     _ => continue
+                // }
             },
             _ => continue
         };
     }
 
-    if !device_config_name.is_empty() {
-        Some(device_config_name)
+    if !list_of_config_paths.is_empty() {
+        Some(list_of_config_paths)
     } else {
         None
     }
