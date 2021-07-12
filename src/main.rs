@@ -1,5 +1,7 @@
 use std::env;
 use std::path::Path;
+use std::fs::File;
+use std::io::{self, prelude::*, BufReader};
 
 use clap::App;
 
@@ -12,6 +14,9 @@ use glob::{
     MatchOptions,
     glob_with
 };
+
+use lazy_static::lazy_static;
+use regex::Regex;
 
 
 // --- --- --- //
@@ -47,14 +52,7 @@ fn main() {
         }
     };
 
-    println!("MAC address of {} is: {}", kernel_if_name, mac_address);
-
-    // ? SCAN config dir /etc/sysconfig/network-scripts
-    // ? iterate over them and get DEVICE, SUBCHANNELS, HWADDR and VLAN
-
-    // file ifcfg-** ?? or directory !!
-    // contain HWADDR = MAC
-    // return NAME = ??
+    println!("MAC address of {} is: {}", kernel_if_name, mac_address);    
 
     scan_config_dir(config_dir);
 
@@ -131,7 +129,27 @@ fn scan_config_dir(config_dir: &Path) -> Option<String> {
 }
 
 /* Scan ifcfg files and look for given HWADDR and return DEVICE name */
+// ? get DEVICE, SUBCHANNELS, HWADDR and VLAN
 fn scan_config_file(config_file: &Path) -> Option<String> {
-    println!("config: {}", config_file.display());
+    // TODO: Proper error handling using ``?``
+    let file = File::open(config_file).unwrap();
+    let reader = BufReader::new(file);
+
+    lazy_static! {
+        static ref RE: Regex = Regex::new(r"^DEVICE=").unwrap();
+    }
+
+    for line in reader.lines(){
+        let line = line.unwrap();
+
+        if RE.is_match(&line){
+            println!("{}", line);
+        }
+
+        // if line.contains("DEVICE="){
+        //     println!("{}", line);
+        // }
+    }
+
     Some("s".to_owned())
 }
