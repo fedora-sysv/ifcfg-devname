@@ -72,11 +72,11 @@ fn main() {
     println!("list of configs: {:?}", list_of_ifcfg_paths);
 
     // ? for loop to check which config has given MAC address and return DEVICE name
-    device_config_name = format!("");
+    device_config_name = String::new();
     for path in list_of_ifcfg_paths {
         let config_file_path: &Path = Path::new(&path);
-        
-        match scan_config_file(config_file_path) {
+
+        match scan_config_file(config_file_path, &mac_address) {
             Some(name) => {
                 device_config_name = format!("{}", name);
                 break;
@@ -160,17 +160,25 @@ fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
 
 /* Scan ifcfg files and look for given HWADDR and return DEVICE name */
 // ? get DEVICE, SUBCHANNELS, HWADDR and VLAN
-fn scan_config_file(config_file: &Path) -> Option<String> {
+fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<String> {
     // TODO: Proper error handling using ``?``
-    let file = File::open(config_file).unwrap();
-    let reader = BufReader::new(file);
+    // TODO: properly test dont use unwrap !!!
+    let file: File;
+    let reader: BufReader<File>;
+    let mut hwaddr: Option<MacAddress>;
+    let mut device: String;
+
+    file = File::open(config_file).unwrap();
+    reader = BufReader::new(file);
+    hwaddr = None;
+    device = String::new();
 
     lazy_static! {
         /* look for line that starts with DEVICE= and then store everything else in group */
-        static ref REGEX_DEVICE: Regex = Regex::new(r"^DEVICE=(.*)").unwrap();
+        static ref REGEX_DEVICE: Regex = Regex::new(r"^DEVICE=(\S*)").unwrap();
 
         /* look for line with mac address and store its value in group for later */
-        static ref REGEX_HWADDR: Regex = Regex::new(r"^HWADDR=(.*)").unwrap();
+        static ref REGEX_HWADDR: Regex = Regex::new(r"^HWADDR=(\S*)").unwrap();
     }
 
     /* Read lines of given file and look for DEVICE= and HWADDR= */
@@ -179,17 +187,22 @@ fn scan_config_file(config_file: &Path) -> Option<String> {
 
         if REGEX_HWADDR.is_match(&line) {
             for capture in REGEX_HWADDR.captures_iter(&line) {
-                println!("mac: {}", &capture[1]);
+                hwaddr = Some(capture[1].parse().unwrap());
+                println!("mac: {}", &hwaddr.unwrap());
             }
         }
 
         if REGEX_DEVICE.is_match(&line) {
             for capture in REGEX_DEVICE.captures_iter(&line) {
-                println!("name: {}", &capture[1]);
+                device = format!("{}", &capture[1]);
+                println!("name: {}", &device);
             }
         }
-
     }
 
-    Some("s".to_owned())
+    if hwaddr.unwrap() == *mac_address  {
+        Some(device)
+    } else {
+        None
+    }
 }
