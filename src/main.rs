@@ -1,19 +1,19 @@
 use std::env;
 use std::path::Path;
 use std::fs::File;
-use std::io::{
+use std::io:: {
     prelude::*,
     BufReader
 };
 
 use clap::App;
 
-use mac_address::{
+use mac_address:: {
     mac_address_by_name,
     MacAddress
 };
 
-use glob::{
+use glob:: {
     MatchOptions,
     glob_with
 };
@@ -75,6 +75,7 @@ fn main() {
     device_config_name = format!("");
     for path in list_of_ifcfg_paths {
         let config_file_path: &Path = Path::new(&path);
+        
         match scan_config_file(config_file_path) {
             Some(name) => {
                 device_config_name = format!("{}", name);
@@ -173,16 +174,16 @@ fn scan_config_file(config_file: &Path) -> Option<String> {
     }
 
     /* Read lines of given file and look for DEVICE= and HWADDR= */
-    for line in reader.lines(){
+    for line in reader.lines() {
         let line = line.unwrap();
 
-        if REGEX_HWADDR.is_match(&line){
+        if REGEX_HWADDR.is_match(&line) {
             for capture in REGEX_HWADDR.captures_iter(&line) {
                 println!("mac: {}", &capture[1]);
             }
         }
 
-        if REGEX_DEVICE.is_match(&line){
+        if REGEX_DEVICE.is_match(&line) {
             for capture in REGEX_DEVICE.captures_iter(&line) {
                 println!("name: {}", &capture[1]);
             }
