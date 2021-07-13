@@ -35,6 +35,7 @@ fn main() {
     let mac_address: MacAddress;
     let config_dir: &Path;
     let list_of_ifcfg_paths: Vec<String>;
+    let mut device_config_name: String;
 
     App::new("rename_device")
         .author("Macku Jan <jamacku@redhat.com>")
@@ -70,7 +71,26 @@ fn main() {
 
     println!("list of configs: {:?}", list_of_ifcfg_paths);
 
+    // ? for loop to check which config has given MAC address and return DEVICE name
+    device_config_name = format!("");
+    for path in list_of_ifcfg_paths {
+        let config_file_path: &Path = Path::new(&path);
+        match scan_config_file(config_file_path) {
+            Some(name) => {
+                device_config_name = format!("{}", name);
+                break;
+            }
+            _ => continue
+        }
+    }
+
     // ? print out correct name of interface
+    if !device_config_name.is_empty() {
+        println!("{}", device_config_name);
+    } else {
+        eprintln!("Device name wasn't found in ifcfg files.");
+        std::process::exit(1);
+    }
 }
 
 
@@ -125,14 +145,6 @@ fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
         match entry {
             Ok(path) => {
                 list_of_config_paths.push(path.to_str().unwrap().to_owned());
-                // let config_file_path: &Path = Path::new(path.as_path());
-                // match scan_config_file(config_file_path) {
-                //     Some(name) => {
-                //         device_config_name = format!("{}", name);
-                //         break;
-                //     }
-                //     _ => continue
-                // }
             },
             _ => continue
         };
