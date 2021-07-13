@@ -45,7 +45,10 @@ fn main() {
     /* Read env variable INTERFACE in order to get names of if */
     kernel_if_name = match read_env_interface(ENV) {
         Some(val) => val,
-        None => std::process::exit(1)
+        None => {
+            eprintln!("Error whille procesing env INTERFACE: {}.", ENV);
+            std::process::exit(1);
+        }
     };
 
     /* Get MAC addres of given interface */
@@ -81,7 +84,7 @@ fn main() {
                 device_config_name = format!("{}", name);
                 break;
             }
-            _ => continue
+            None => continue
         }
     }
 
@@ -99,20 +102,11 @@ fn main() {
 
 /* Read env variable INTERFACE in order to get names of if */
 fn read_env_interface(env_name: &str) -> Option<String> {
-    match env::var_os(env_name) {
-        Some(val) => {
-            match val.into_string() {
-                Ok(val) => Some(val),
-                _ => {
-                    eprintln!("Error whille procesing env INTERFACE: {}.", env_name);
-                    None
-                }
-            }
-        },
-        None => {
-            eprintln!("{} is not defined in the environment.", env_name);
-            None
-        }
+    /* Converts the OsString into a [String] if it contains valid Unicode data.
+     *  On failure, ownership of the original OsString is returned. */
+    match env::var_os(env_name)?.into_string() {
+        Ok(val) => Some(val),
+        Err(_err) => None
     }
 }
 
@@ -120,9 +114,7 @@ fn read_env_interface(env_name: &str) -> Option<String> {
 fn get_mac_address(if_name: &str) -> Option<MacAddress> {
     match mac_address_by_name(if_name) {
         Ok(val) => val,
-        _ => {
-            None
-        }
+        Err(_err) => None
     }
 }
 
@@ -138,16 +130,16 @@ fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
         require_literal_leading_dot: false,
     };
 
-    glob_patern = config_dir.to_str().unwrap().to_owned() + "/ifcfg-*";
+    glob_patern = config_dir.to_str()?.to_owned() + "/ifcfg-*";
 
     list_of_config_paths = vec![];
 
     for entry in glob_with(&glob_patern, glob_options).unwrap() {
         match entry {
             Ok(path) => {
-                list_of_config_paths.push(path.to_str().unwrap().to_owned());
+                list_of_config_paths.push(path.to_str()?.to_owned());
             },
-            _ => continue
+            Err(_err) => continue
         };
     }
 
@@ -161,7 +153,6 @@ fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
 /* Scan ifcfg files and look for given HWADDR and return DEVICE name */
 // ? get DEVICE, SUBCHANNELS, HWADDR and VLAN
 fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<String> {
-    // TODO: Proper error handling using ``?``
     // TODO: properly test dont use unwrap !!!
     let file: File;
     let reader: BufReader<File>;
