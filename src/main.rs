@@ -35,6 +35,7 @@ fn main() {
     let mac_address: MacAddress;
     let config_dir: &Path;
     let list_of_ifcfg_paths: Vec<String>;
+
     let mut device_config_name: String;
 
     App::new("rename_device")
@@ -88,7 +89,6 @@ fn main() {
         }
     }
 
-    // ? print out correct name of interface
     if !device_config_name.is_empty() {
         println!("{}", device_config_name);
     } else {
@@ -122,6 +122,7 @@ fn get_mac_address(if_name: &str) -> Option<MacAddress> {
 fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
     let glob_options: MatchOptions;
     let glob_patern: String;
+
     let mut list_of_config_paths: Vec<String>;
 
     glob_options = glob::MatchOptions {
@@ -151,11 +152,11 @@ fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
 }
 
 /* Scan ifcfg files and look for given HWADDR and return DEVICE name */
-// ? get DEVICE, SUBCHANNELS, HWADDR and VLAN
 fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<String> {
-    // TODO: properly test dont use unwrap !!!
     let file: File;
     let reader: BufReader<File>;
+
+    /* hwaddr needs to be Option in order to prevent Error: "borrow of possibly-uninitialized variable" */
     let mut hwaddr: Option<MacAddress>;
     let mut device: String;
 
@@ -176,13 +177,15 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<Stri
     for line in reader.lines() {
         let line = line.unwrap();
 
+        /* Look for HWADDR= */
         if REGEX_HWADDR.is_match(&line) {
             for capture in REGEX_HWADDR.captures_iter(&line) {
                 hwaddr = Some(capture[1].parse().unwrap());
-                println!("mac: {}", &hwaddr.unwrap());
+                println!("mac: {}", &hwaddr?);
             }
         }
 
+        /* Look for DEVICE= */
         if REGEX_DEVICE.is_match(&line) {
             for capture in REGEX_DEVICE.captures_iter(&line) {
                 device = format!("{}", &capture[1]);
@@ -191,7 +194,7 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<Stri
         }
     }
 
-    if hwaddr.unwrap() == *mac_address  {
+    if hwaddr? == *mac_address  {
         Some(device)
     } else {
         None
