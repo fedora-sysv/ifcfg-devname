@@ -62,6 +62,10 @@ fn main() {
     }; 
     
     // TODO: scan kernel cmd for ifname=new_name:aa:aa:aa:aa:aa:aa
+    /* Let's check kernel cmdline and also process ifname= entries
+     * as they are documented in dracut.cmdline(7)
+     * Example: ifname=test:aa:bb:cc:dd:ee:ff
+     */
 
     /* Scan config dir and look for ifcfg-* files */
     config_dir = Path::new(CONFIG_DIR);
@@ -203,4 +207,9 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<Stri
     } else {
         None
     }
+}
+
+/* Scan kernel cmd and look for given hardware address and return new device name */
+fn scan_kernel_cmd(mac_address: &MacAddress) -> Option<String> {
+    
 }
