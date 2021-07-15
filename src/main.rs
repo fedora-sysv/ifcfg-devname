@@ -47,16 +47,18 @@ fn main() {
     kernel_if_name = match read_env_interface(ENV) {
         Some(val) => val,
         None => {
-            // eprintln!("Error whille procesing env INTERFACE: {}.", ENV);
+            /* Error while processing ENV INTERFACE */
+            // eprintln!("Error while processing ENV INTERFACE: {}.", ENV);
             std::process::exit(1);
         }
     };
 
-    /* Get MAC addres of given interface */
+    /* Get MAC address of given interface */
     mac_address = match get_mac_address(&kernel_if_name) {
         Some(val) => val,
         None => {
-            // eprintln!("Error whille getting MAC address of current if: {}.", kernel_if_name);
+            /* Error while getting MAC address of given network interface */
+            // eprintln!("Error while getting MAC address of current if: {}.", kernel_if_name);
             std::process::exit(1);
         }
     };
@@ -68,6 +70,7 @@ fn main() {
     list_of_ifcfg_paths = match scan_config_dir(config_dir) {
         Some(val) => val,
         None => {
+            /* Error while getting list of ifcfg files from directory /etc/sysconfig/network-scripts/ */
             // eprintln!("Error whille getting list of ifcfg files in directory: {}.", config_dir.display());
             std::process::exit(1);
         }
@@ -75,7 +78,7 @@ fn main() {
 
     // println!("list of configs: {:?}", list_of_ifcfg_paths);
 
-    // ? for loop to check which config has given MAC address and return DEVICE name
+    /* Loop through ifcfg configurations and look for matching MAC address and return DEVICE name */
     device_config_name = String::new();
     for path in list_of_ifcfg_paths {
         let config_file_path: &Path = Path::new(&path);
@@ -92,6 +95,7 @@ fn main() {
     if !device_config_name.is_empty() {
         println!("{}", device_config_name);
     } else {
+        /* Device name or MAC address weren't found in ifcfg files. */
         // eprintln!("Device name wasn't found in ifcfg files.");
         std::process::exit(1);
     }
@@ -100,17 +104,16 @@ fn main() {
 
 // --- Functions --- //
 
-/* Read env variable INTERFACE in order to get names of if */
+/* Read env variable INTERFACE in order to get name of network interface */
 fn read_env_interface(env_name: &str) -> Option<String> {
-    /* Converts the OsString into a [String] if it contains valid Unicode data.
-     *  On failure, ownership of the original OsString is returned. */
+    /* Converts the OsString into a [String] if it contains valid Unicode data. On failure, ownership of the original OsString is returned. */
     match env::var_os(env_name)?.into_string() {
         Ok(val) => Some(val),
         Err(_err) => None
     }
 }
 
-/* Get MAC addres of given interface */
+/* Get MAC address of given interface */
 fn get_mac_address(if_name: &str) -> Option<MacAddress> {
     match mac_address_by_name(if_name) {
         Ok(val) => val,
@@ -156,7 +159,7 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<Stri
     let file: File;
     let reader: BufReader<File>;
 
-    /* hwaddr needs to be Option in order to prevent Error: "borrow of possibly-uninitialized variable" */
+    /* Hwaddr needs to be Option in order to prevent Error: "borrow of possibly-uninitialized variable" */
     let mut hwaddr: Option<MacAddress>;
     let mut device: String;
 
@@ -166,10 +169,10 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<Stri
     device = String::new();
 
     lazy_static! {
-        /* look for line that starts with DEVICE= and then store everything else in group */
+        /* Look for line that starts with DEVICE= and then store everything else in group */
         static ref REGEX_DEVICE: Regex = Regex::new(r"^DEVICE=(\S*)").unwrap();
 
-        /* look for line with mac address and store its value in group for later */
+        /* Look for line with mac address and store its value in group for later */
         static ref REGEX_HWADDR: Regex = Regex::new(r"^HWADDR=(\S*)").unwrap();
     }
 
