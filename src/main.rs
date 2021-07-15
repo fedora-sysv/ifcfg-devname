@@ -40,7 +40,11 @@ fn main() {
 
     App::new("rename_device")
         .author("Macku Jan <jamacku@redhat.com>")
-        .about("Does awesome things")
+        .about("Profram rename_device reads ENV INTERFACE, which is expected to contain name of network interface.
+            Then it looks for hardware address of such interface. Finaly it scans ifcfg configuration files 
+            in directory /etc/sysconfig/network-scripts/ and look for configuration with HWADDR set to given hw address. 
+            If program succesfuly finds such a configuration, it returns on standart output content of property DEVICE 
+            from matching ifcfg configuration. In all other cases it returns error code 1.")
         .get_matches();
 
     /* Read env variable INTERFACE in order to get names of if */
