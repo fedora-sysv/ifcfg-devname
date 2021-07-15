@@ -59,7 +59,9 @@ fn main() {
             /* Error while getting MAC address of given network interface */
             std::process::exit(1);
         }
-    };   
+    }; 
+    
+    // TODO: scan kernel cmd for ifname=new_name:aa:aa:aa:aa:aa:aa
 
     /* Scan config dir and look for ifcfg-* files */
     config_dir = Path::new(CONFIG_DIR);
