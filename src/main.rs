@@ -40,18 +40,14 @@ fn main() {
 
     App::new("rename_device")
         .author("Macku Jan <jamacku@redhat.com>")
-        .about("Profram rename_device reads ENV INTERFACE, which is expected to contain name of network interface.
-            Then it looks for hardware address of such interface. Finaly it scans ifcfg configuration files 
-            in directory /etc/sysconfig/network-scripts/ and look for configuration with HWADDR set to given hw address. 
-            If program succesfuly finds such a configuration, it returns on standart output content of property DEVICE 
-            from matching ifcfg configuration. In all other cases it returns error code 1.")
+        .about("Program rename_device reads ENV INTERFACE, which is expected to contain the name of the network interface. Then it looks for the hardware address of such an interface. Finally it scans ifcfg configuration files in directory /etc/sysconfig/network-scripts/ and looks for configuration with HWADDR set to given hw address. If the program successfully finds such a configuration, it returns on standard output content of property DEVICE from matching ifcfg configuration. In all other cases it returns error code 1.")
         .get_matches();
 
     /* Read env variable INTERFACE in order to get names of if */
     kernel_if_name = match read_env_interface(ENV) {
         Some(val) => val,
         None => {
-            eprintln!("Error whille procesing env INTERFACE: {}.", ENV);
+            // eprintln!("Error whille procesing env INTERFACE: {}.", ENV);
             std::process::exit(1);
         }
     };
@@ -60,24 +56,24 @@ fn main() {
     mac_address = match get_mac_address(&kernel_if_name) {
         Some(val) => val,
         None => {
-            eprintln!("Error whille getting MAC address of current if: {}.", kernel_if_name);
+            // eprintln!("Error whille getting MAC address of current if: {}.", kernel_if_name);
             std::process::exit(1);
         }
     };
 
-    println!("MAC address of {} is: {}", kernel_if_name, mac_address);    
+    // println!("MAC address of {} is: {}", kernel_if_name, mac_address);    
 
     /* Scan config dir and look for ifcfg-* files */
     config_dir = Path::new(CONFIG_DIR);
     list_of_ifcfg_paths = match scan_config_dir(config_dir) {
         Some(val) => val,
         None => {
-            eprintln!("Error whille getting list of ifcfg files in directory: {}.", config_dir.display());
+            // eprintln!("Error whille getting list of ifcfg files in directory: {}.", config_dir.display());
             std::process::exit(1);
         }
     };
 
-    println!("list of configs: {:?}", list_of_ifcfg_paths);
+    // println!("list of configs: {:?}", list_of_ifcfg_paths);
 
     // ? for loop to check which config has given MAC address and return DEVICE name
     device_config_name = String::new();
@@ -96,7 +92,7 @@ fn main() {
     if !device_config_name.is_empty() {
         println!("{}", device_config_name);
     } else {
-        eprintln!("Device name wasn't found in ifcfg files.");
+        // eprintln!("Device name wasn't found in ifcfg files.");
         std::process::exit(1);
     }
 }
@@ -185,7 +181,7 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<Stri
         if REGEX_HWADDR.is_match(&line) {
             for capture in REGEX_HWADDR.captures_iter(&line) {
                 hwaddr = Some(capture[1].parse().unwrap());
-                println!("mac: {}", &hwaddr?);
+                // println!("mac: {}", &hwaddr?);
             }
         }
 
@@ -193,7 +189,7 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<Stri
         if REGEX_DEVICE.is_match(&line) {
             for capture in REGEX_DEVICE.captures_iter(&line) {
                 device = format!("{}", &capture[1]);
-                println!("name: {}", &device);
+                // println!("name: {}", &device);
             }
         }
     }
