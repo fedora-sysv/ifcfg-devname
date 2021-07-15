@@ -80,13 +80,13 @@ fn main() {
 
     /* Loop through ifcfg configurations and look for matching MAC address and return DEVICE name */
     device_config_name = String::new();
-    for path in list_of_ifcfg_paths {
+    'config_loop: for path in list_of_ifcfg_paths {
         let config_file_path: &Path = Path::new(&path);
 
         match scan_config_file(config_file_path, &mac_address) {
             Some(name) => {
                 device_config_name = format!("{}", name);
-                break;
+                break 'config_loop;
             }
             None => continue
         }
@@ -159,14 +159,14 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<Stri
     let file: File;
     let reader: BufReader<File>;
 
-    /* Hwaddr needs to be Option in order to prevent Error: "borrow of possibly-uninitialized variable" */
+    /* Needs to be Option in order to prevent Error: "borrow of possibly-uninitialized variable" */
     let mut hwaddr: Option<MacAddress>;
-    let mut device: String;
+    let mut device: Option<String>;
 
     file = File::open(config_file).unwrap();
     reader = BufReader::new(file);
     hwaddr = None;
-    device = String::new();
+    device = None;
 
     lazy_static! {
         /* Look for line that starts with DEVICE= and then store everything else in group */
@@ -184,21 +184,30 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<Stri
         if REGEX_HWADDR.is_match(&line) {
             for capture in REGEX_HWADDR.captures_iter(&line) {
                 hwaddr = Some(capture[1].parse().unwrap());
-                // println!("mac: {}", &hwaddr?);
+                // println!("mac: {} {}", &hwaddr?, mac_address);
             }
         }
 
         /* Look for DEVICE= */
         if REGEX_DEVICE.is_match(&line) {
             for capture in REGEX_DEVICE.captures_iter(&line) {
-                device = format!("{}", &capture[1]);
-                // println!("name: {}", &device);
+                device = Some(capture[1].parse().unwrap());
+                // println!("name: {}", &device?);
             }
         }
     }
 
-    if hwaddr? == *mac_address  {
-        Some(device)
+    if hwaddr?
+        .to_string()
+        .to_owned()
+        .to_lowercase()
+        .eq(
+            &mac_address
+                .to_string()
+                .to_owned()
+                .to_lowercase()
+    ) {
+        device
     } else {
         None
     }
