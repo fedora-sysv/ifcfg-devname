@@ -48,7 +48,6 @@ fn main() {
         Some(val) => val,
         None => {
             /* Error while processing ENV INTERFACE */
-            // eprintln!("Error while processing ENV INTERFACE: {}.", ENV);
             std::process::exit(1);
         }
     };
@@ -58,12 +57,9 @@ fn main() {
         Some(val) => val,
         None => {
             /* Error while getting MAC address of given network interface */
-            // eprintln!("Error while getting MAC address of current if: {}.", kernel_if_name);
             std::process::exit(1);
         }
-    };
-
-    // println!("MAC address of {} is: {}", kernel_if_name, mac_address);    
+    };   
 
     /* Scan config dir and look for ifcfg-* files */
     config_dir = Path::new(CONFIG_DIR);
@@ -71,12 +67,9 @@ fn main() {
         Some(val) => val,
         None => {
             /* Error while getting list of ifcfg files from directory /etc/sysconfig/network-scripts/ */
-            // eprintln!("Error whille getting list of ifcfg files in directory: {}.", config_dir.display());
             std::process::exit(1);
         }
     };
-
-    // println!("list of configs: {:?}", list_of_ifcfg_paths);
 
     /* Loop through ifcfg configurations and look for matching MAC address and return DEVICE name */
     device_config_name = String::new();
@@ -96,7 +89,6 @@ fn main() {
         println!("{}", device_config_name);
     } else {
         /* Device name or MAC address weren't found in ifcfg files. */
-        // eprintln!("Device name wasn't found in ifcfg files.");
         std::process::exit(1);
     }
 }
@@ -184,7 +176,6 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<Stri
         if REGEX_HWADDR.is_match(&line) {
             for capture in REGEX_HWADDR.captures_iter(&line) {
                 hwaddr = Some(capture[1].parse().unwrap());
-                // println!("mac: {} {}", &hwaddr?, mac_address);
             }
         }
 
@@ -192,7 +183,6 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<Stri
         if REGEX_DEVICE.is_match(&line) {
             for capture in REGEX_DEVICE.captures_iter(&line) {
                 device = Some(capture[1].parse().unwrap());
-                // println!("name: {}", &device?);
             }
         }
     }
