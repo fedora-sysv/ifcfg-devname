@@ -1,4 +1,5 @@
 use std::env;
+use std::error;
 use std::path::Path;
 use std::fs::File;
 use std::io:: {
@@ -24,8 +25,12 @@ use regex::Regex;
 
 // --- --- --- //
 
+/* Implement conversion from any type that implements the Error trait into the trait object Box<Error> */
+type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
+
 const ENV: &str = "INTERFACE";
 const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
+const KERNEL_CMD: &str = "/proc/cmdline";
 
 
 // --- --- --- //
@@ -46,19 +51,15 @@ fn main() {
     /* Read env variable INTERFACE in order to get names of if */
     kernel_if_name = match read_env_interface(ENV) {
         Some(val) => val,
-        None => {
-            /* Error while processing ENV INTERFACE */
-            std::process::exit(1);
-        }
+        /* Error while processing ENV INTERFACE */
+        None => std::process::exit(1)
     };
 
     /* Get MAC address of given interface */
     mac_address = match get_mac_address(&kernel_if_name) {
-        Some(val) => val,
-        None => {
-            /* Error while getting MAC address of given network interface */
-            std::process::exit(1);
-        }
+        Ok(val) => val.unwrap(),
+        /* Error while getting MAC address of given network interface */
+        Err(_err) => std::process::exit(1)
     }; 
     
     // TODO: scan kernel cmd for ifname=new_name:aa:aa:aa:aa:aa:aa
@@ -67,14 +68,13 @@ fn main() {
      * Example: ifname=test:aa:bb:cc:dd:ee:ff
      */
 
+
     /* Scan config dir and look for ifcfg-* files */
     config_dir = Path::new(CONFIG_DIR);
     list_of_ifcfg_paths = match scan_config_dir(config_dir) {
         Some(val) => val,
-        None => {
-            /* Error while getting list of ifcfg files from directory /etc/sysconfig/network-scripts/ */
-            std::process::exit(1);
-        }
+        /* Error while getting list of ifcfg files from directory /etc/sysconfig/network-scripts/ */
+        None => std::process::exit(1)
     };
 
     /* Loop through ifcfg configurations and look for matching MAC address and return DEVICE name */
@@ -112,11 +112,8 @@ fn read_env_interface(env_name: &str) -> Option<String> {
 }
 
 /* Get MAC address of given interface */
-fn get_mac_address(if_name: &str) -> Option<MacAddress> {
-    match mac_address_by_name(if_name) {
-        Ok(val) => val,
-        Err(_err) => None
-    }
+fn get_mac_address(if_name: &str) -> Result<Option<MacAddress>> {
+    Ok(mac_address_by_name(if_name)?)
 }
 
 /* Scan directory /etc/sysconfig/network-scripts for ifcfg files */
@@ -210,6 +207,51 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<Stri
 }
 
 /* Scan kernel cmd and look for given hardware address and return new device name */
-fn scan_kernel_cmd(mac_address: &MacAddress) -> Option<String> {
-    
+fn scan_kernel_cmd(mac_address: &MacAddress) -> Result<Option<String>> {
+    let file: File;
+    let reader: BufReader<File>;
+    let mut reading_buf: String;
+
+    file = File::open(KERNEL_CMD).unwrap();
+    reader = BufReader::new(file);
+
+    lazy_static! {
+        /* Look for paterns like this ifname=new_name:aa:BB:CC:DD:ee:ff at kernel command line */
+        static ref REGEX_DEVICE_HWADDR_PAIR: Regex = Regex::new(r"ifname=(\S+?):(\S*)").unwrap();
+    }
+
+    /* Read lines of given file and look for DEVICE= and HWADDR= */
+    reader.read_line(&mut reading_buf)?;
+    // for line in reader.lines() {
+    //     let line = line.unwrap();
+
+    //     /* Look for HWADDR= */
+    //     if REGEX_HWADDR.is_match(&line) {
+    //         for capture in REGEX_HWADDR.captures_iter(&line) {
+    //             hwaddr = Some(capture[1].parse().unwrap());
+    //         }
+    //     }
+
+    //     /* Look for DEVICE= */
+    //     if REGEX_DEVICE.is_match(&line) {
+    //         for capture in REGEX_DEVICE.captures_iter(&line) {
+    //             device = Some(capture[1].parse().unwrap());
+    //         }
+    //     }
+    // }
+
+    // if hwaddr?
+    //     .to_string()
+    //     .to_owned()
+    //     .to_lowercase()
+    //     .eq(
+    //         &mac_address
+    //             .to_string()
+    //             .to_owned()
+    //             .to_lowercase()
+    // ) {
+    //     device
+    // } else {
+    //     None
+    // }
 }
