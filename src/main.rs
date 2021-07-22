@@ -210,35 +210,33 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<Stri
 fn scan_kernel_cmd(mac_address: &MacAddress) -> Result<Option<String>> {
     let file: File;
     let reader: BufReader<File>;
-    let mut reading_buf: String;
+
+    /* Needs to be Option in order to prevent Error: "borrow of possibly-uninitialized variable" */
+    let mut hwaddr: Option<MacAddress>;
+    let mut device: Option<String>;
 
     file = File::open(KERNEL_CMD).unwrap();
     reader = BufReader::new(file);
+    hwaddr = None;
+    device = None;
 
     lazy_static! {
         /* Look for paterns like this ifname=new_name:aa:BB:CC:DD:ee:ff at kernel command line */
         static ref REGEX_DEVICE_HWADDR_PAIR: Regex = Regex::new(r"ifname=(\S+?):(\S*)").unwrap();
     }
 
-    /* Read lines of given file and look for DEVICE= and HWADDR= */
-    reader.read_line(&mut reading_buf)?;
-    // for line in reader.lines() {
-    //     let line = line.unwrap();
+    /* Read lines of kernel command line and look for ifname= */
+    for line in reader.lines() {
+        let line = line?;
 
-    //     /* Look for HWADDR= */
-    //     if REGEX_HWADDR.is_match(&line) {
-    //         for capture in REGEX_HWADDR.captures_iter(&line) {
-    //             hwaddr = Some(capture[1].parse().unwrap());
-    //         }
-    //     }
-
-    //     /* Look for DEVICE= */
-    //     if REGEX_DEVICE.is_match(&line) {
-    //         for capture in REGEX_DEVICE.captures_iter(&line) {
-    //             device = Some(capture[1].parse().unwrap());
-    //         }
-    //     }
-    // }
+        /* Look for ifname= */
+        if REGEX_DEVICE_HWADDR_PAIR.is_match(&line) {
+            for capture in REGEX_DEVICE_HWADDR_PAIR.captures_iter(&line) {
+                device = Some(capture[1].parse()?);
+                hwaddr = Some(capture[2].parse()?);
+            }
+        }
+    }
 
     // if hwaddr?
     //     .to_string()
@@ -254,4 +252,6 @@ fn scan_kernel_cmd(mac_address: &MacAddress) -> Result<Option<String>> {
     // } else {
     //     None
     // }
+
+    Ok(Some(String::new()))
 }
