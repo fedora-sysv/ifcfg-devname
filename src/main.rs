@@ -57,9 +57,9 @@ fn main() {
 
     /* Get MAC address of given interface */
     mac_address = match get_mac_address(&kernel_if_name) {
-        Ok(val) => val.unwrap(),
+        Ok(Some(val)) => val,
         /* Error while getting MAC address of given network interface */
-        Err(_err) => std::process::exit(1)
+        _ => std::process::exit(1)
     }; 
     
     // TODO: scan kernel cmd for ifname=new_name:aa:aa:aa:aa:aa:aa
