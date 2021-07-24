@@ -30,7 +30,8 @@ type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
 
 const ENV: &str = "INTERFACE";
 const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
-const KERNEL_CMD: &str = "/proc/cmdline";
+// const KERNEL_CMD: &str = "/proc/cmdline";
+const KERNEL_CMD: &str = "./fake_kernel_cmd";
 
 
 // --- --- --- //
@@ -67,7 +68,7 @@ fn main() {
      * as they are documented in dracut.cmdline(7)
      * Example: ifname=test:aa:bb:cc:dd:ee:ff
      */
-
+    scan_kernel_cmd(&mac_address);
 
     /* Scan config dir and look for ifcfg-* files */
     config_dir = Path::new(CONFIG_DIR);
@@ -229,11 +230,14 @@ fn scan_kernel_cmd(mac_address: &MacAddress) -> Result<Option<String>> {
     for line in reader.lines() {
         let line = line?;
 
+        println!("kernel cmd: {}", line);
+
         /* Look for ifname= */
         if REGEX_DEVICE_HWADDR_PAIR.is_match(&line) {
             for capture in REGEX_DEVICE_HWADDR_PAIR.captures_iter(&line) {
                 device = Some(capture[1].parse()?);
                 hwaddr = Some(capture[2].parse()?);
+                println!("ifname={:?}:{:?}", device.unwrap(), hwaddr.unwrap().to_string());
             }
         }
     }

@@ -1,0 +1,1 @@
+BOOT_IMAGE=(hd0,msdos1)/vmlinuz-5.12.8-200.fc33.x86_64 root=/dev/mapper/fedora-root ro resume=/dev/mapper/fedora-swap rd.lvm.lv=fedora/root rd.luks.uuid=luks-5e3f6071-ba42-4d65-a65d-2608d863136f rd.lvm.lv=fedora/swap rhgb quiet ifname=test:AA:BB:CC:DD:EE:FF ifname=AHOJ:AA:BB:CC:DD:EE:FA
