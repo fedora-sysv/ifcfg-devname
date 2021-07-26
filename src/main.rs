@@ -2,6 +2,7 @@ use std::env;
 use std::error;
 use std::path::Path;
 use std::fs::File;
+use std::io::ErrorKind;
 use std::io:: {
     prelude::*,
     BufReader
@@ -238,24 +239,18 @@ fn scan_kernel_cmd(mac_address: &MacAddress) -> Result<Option<String>> {
                 device = Some(capture[1].parse()?);
                 hwaddr = Some(capture[2].parse()?);
                 println!("ifname={:?}:{:?}", device.unwrap(), hwaddr.unwrap().to_string());
+                
+                if hwaddr.unwrap().to_string().to_owned().to_lowercase().eq(&mac_address.to_string().to_owned().to_lowercase()) {
+                    break;
+                } else {
+                     device = None;
+                }
             }
         }
     }
 
-    // if hwaddr?
-    //     .to_string()
-    //     .to_owned()
-    //     .to_lowercase()
-    //     .eq(
-    //         &mac_address
-    //             .to_string()
-    //             .to_owned()
-    //             .to_lowercase()
-    // ) {
-    //     device
-    // } else {
-    //     None
-    // }
-
-    Ok(Some(String::new()))
+    match device {
+        Some(val) => Ok(Some(val)),
+        None => Err(ErrorKind::NotFound)
+    }
 }
