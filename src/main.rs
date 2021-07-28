@@ -152,7 +152,7 @@ fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
 }
 
 /* Scan ifcfg files and look for given HWADDR and return DEVICE name */
-fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<String> {
+fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Option<String>> {
     let file: File;
     let reader: BufReader<File>;
 
@@ -160,7 +160,7 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<Stri
     let mut hwaddr: Option<MacAddress>;
     let mut device: Option<String>;
 
-    file = File::open(config_file).unwrap();
+    file = File::open(config_file)?;
     reader = BufReader::new(file);
     hwaddr = None;
     device = None;
@@ -175,24 +175,26 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<Stri
 
     /* Read lines of given file and look for DEVICE= and HWADDR= */
     for line in reader.lines() {
-        let line = line.unwrap();
+        let line = line?;
 
         /* Look for HWADDR= */
         if REGEX_HWADDR.is_match(&line) {
             for capture in REGEX_HWADDR.captures_iter(&line) {
-                hwaddr = Some(capture[1].parse().unwrap());
+                hwaddr = Some(capture[1].parse()?);
             }
         }
 
         /* Look for DEVICE= */
         if REGEX_DEVICE.is_match(&line) {
             for capture in REGEX_DEVICE.captures_iter(&line) {
-                device = Some(capture[1].parse().unwrap());
+                device = Some(capture[1].parse()?);
             }
         }
     }
 
-    if hwaddr?
+    /* When MAC doesn't match it returns OK(None) */
+    if hwaddr
+        .unwrap()
         .to_string()
         .to_owned()
         .to_lowercase()
@@ -202,9 +204,9 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Option<Stri
                 .to_owned()
                 .to_lowercase()
     ) {
-        device
+        Ok(device)
     } else {
-        None
+        Ok(None)
     }
 }
 
@@ -238,9 +240,19 @@ fn scan_kernel_cmd(mac_address: &MacAddress) -> Result<Option<String>> {
             for capture in REGEX_DEVICE_HWADDR_PAIR.captures_iter(&line) {
                 device = Some(capture[1].parse()?);
                 hwaddr = Some(capture[2].parse()?);
-                println!("ifname={:?}:{:?}", device.unwrap(), hwaddr.unwrap().to_string());
                 
-                if hwaddr.unwrap().to_string().to_owned().to_lowercase().eq(&mac_address.to_string().to_owned().to_lowercase()) {
+                /* Check MAC */
+                if hwaddr
+                    .unwrap()
+                    .to_string()
+                    .to_owned()
+                    .to_lowercase()
+                    .eq(
+                        &mac_address
+                            .to_string()
+                            .to_owned()
+                            .to_lowercase()
+                ) {
                     break;
                 } else {
                      device = None;
@@ -249,8 +261,8 @@ fn scan_kernel_cmd(mac_address: &MacAddress) -> Result<Option<String>> {
         }
     }
 
+    /* When MAC doesn't match it returns OK(None) */
     match device {
-        Some(val) => Ok(Some(val)),
-        None => Err(ErrorKind::NotFound)
+        dev => Ok(dev)
     }
 }
