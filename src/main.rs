@@ -85,11 +85,11 @@ fn main() {
         let config_file_path: &Path = Path::new(&path);
 
         match scan_config_file(config_file_path, &mac_address) {
-            Some(name) => {
+            Ok(Some(name)) => {
                 device_config_name = format!("{}", name);
                 break 'config_loop;
             }
-            None => continue
+            _ => continue
         }
     }
 
