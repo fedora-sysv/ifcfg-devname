@@ -192,21 +192,25 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Opti
         }
     }
 
+    if hwaddr.is_some() {
+        if hwaddr
+            .unwrap()
+            .to_string()
+            .to_owned()
+            .to_lowercase()
+            .ne(
+                &mac_address
+                    .to_string()
+                    .to_owned()
+                    .to_lowercase()
+        ) {
+            device = None;
+        }
+    }
+
     /* When MAC doesn't match it returns OK(None) */
-    if hwaddr
-        .unwrap()
-        .to_string()
-        .to_owned()
-        .to_lowercase()
-        .eq(
-            &mac_address
-                .to_string()
-                .to_owned()
-                .to_lowercase()
-    ) {
-        Ok(device)
-    } else {
-        Ok(None)
+    match device {
+        dev => Ok(dev)
     }
 }
 
@@ -233,8 +237,6 @@ fn scan_kernel_cmd(mac_address: &MacAddress) -> Result<Option<String>> {
     for line in reader.lines() {
         let line = line?;
 
-        println!("kernel cmd: {}", line);
-
         /* Look for ifname= */
         if REGEX_DEVICE_HWADDR_PAIR.is_match(&line) {
             for capture in REGEX_DEVICE_HWADDR_PAIR.captures_iter(&line) {
@@ -242,20 +244,22 @@ fn scan_kernel_cmd(mac_address: &MacAddress) -> Result<Option<String>> {
                 hwaddr = Some(capture[2].parse()?);
                 
                 /* Check MAC */
-                if hwaddr
-                    .unwrap()
-                    .to_string()
-                    .to_owned()
-                    .to_lowercase()
-                    .eq(
-                        &mac_address
-                            .to_string()
-                            .to_owned()
-                            .to_lowercase()
-                ) {
-                    break;
-                } else {
-                     device = None;
+                if hwaddr.is_some() {
+                    if hwaddr
+                        .unwrap()
+                        .to_string()
+                        .to_owned()
+                        .to_lowercase()
+                        .eq(
+                            &mac_address
+                                .to_string()
+                                .to_owned()
+                                .to_lowercase()
+                    ) {
+                        break;
+                    } else {
+                        device = None;
+                    }
                 }
             }
         }
