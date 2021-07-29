@@ -64,32 +64,37 @@ fn main() {
         _ => std::process::exit(1)
     }; 
     
-    // TODO: scan kernel cmd for ifname=new_name:aa:aa:aa:aa:aa:aa
     /* Let's check kernel cmdline and also process ifname= entries
      * as they are documented in dracut.cmdline(7)
      * Example: ifname=test:aa:bb:cc:dd:ee:ff
      */
-    scan_kernel_cmd(&mac_address);
-
-    /* Scan config dir and look for ifcfg-* files */
-    config_dir = Path::new(CONFIG_DIR);
-    list_of_ifcfg_paths = match scan_config_dir(config_dir) {
-        Some(val) => val,
-        /* Error while getting list of ifcfg files from directory /etc/sysconfig/network-scripts/ */
-        None => std::process::exit(1)
+    device_config_name = match scan_kernel_cmd(&mac_address) {
+        Ok(Some(name)) => name,
+        _ => String::from("")
     };
 
-    /* Loop through ifcfg configurations and look for matching MAC address and return DEVICE name */
-    device_config_name = String::new();
-    'config_loop: for path in list_of_ifcfg_paths {
-        let config_file_path: &Path = Path::new(&path);
+    /* When device was not found at kernel cmd look into ifcfg files */
+    if device_config_name.is_empty() {
+        /* Scan config dir and look for ifcfg-* files */
+        config_dir = Path::new(CONFIG_DIR);
+        list_of_ifcfg_paths = match scan_config_dir(config_dir) {
+            Some(val) => val,
+            /* Error while getting list of ifcfg files from directory /etc/sysconfig/network-scripts/ */
+            None => std::process::exit(1)
+        };
 
-        match scan_config_file(config_file_path, &mac_address) {
-            Ok(Some(name)) => {
-                device_config_name = format!("{}", name);
-                break 'config_loop;
+        /* Loop through ifcfg configurations and look for matching MAC address and return DEVICE name */
+        device_config_name = String::new();
+        'config_loop: for path in list_of_ifcfg_paths {
+            let config_file_path: &Path = Path::new(&path);
+
+            match scan_config_file(config_file_path, &mac_address) {
+                Ok(Some(name)) => {
+                    device_config_name = format!("{}", name);
+                    break 'config_loop;
+                }
+                _ => continue
             }
-            _ => continue
         }
     }
 
