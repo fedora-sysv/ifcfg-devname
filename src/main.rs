@@ -32,10 +32,10 @@ const KERNEL_CMDLINE: &str = "/proc/cmdline";
 
 fn main() {
     /* Read env variable INTERFACE in order to get names of if */
-    let kernel_if_name = match read_env_interface(ENV) {
-        Some(val) => val,
+    let kernel_if_name = match env::var_os(ENV).unwrap().into_string() {
+        Ok(val) => val,
         /* Error while processing ENV INTERFACE */
-        None => std::process::exit(1)
+        Err(_err) => std::process::exit(1)
     };
 
     /* Get MAC address of given interface */
@@ -89,16 +89,6 @@ fn main() {
 
 
 // --- Functions --- //
-
-/* Read env variable INTERFACE in order to get name of network interface */
-fn read_env_interface(env_name: &str) -> Option<String> {
-    /* Converts the OsString into a [String] if it contains valid Unicode data. On failure, ownership of the original OsString is returned. */
-    match env::var_os(env_name)?.into_string() {
-        Ok(val) => Some(val),
-        Err(_err) => None
-    }
-}
-
 /* Scan directory /etc/sysconfig/network-scripts for ifcfg files */
 fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
     let glob_options = glob::MatchOptions {
