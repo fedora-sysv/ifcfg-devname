@@ -12,4 +12,4 @@ This repository provides source code for rename_device binary. The binary requir
 INTERFACE=eth0 cargo run --release
 ```
 
-Environment variable ``INTERFACE`` taks name of the interface. The binary also supports flags like ``--help`` and ``--version``.
+Environment variable ``INTERFACE`` takes name of the interface.
