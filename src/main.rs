@@ -12,10 +12,7 @@ use mac_address:: {
     MacAddress
 };
 
-use glob:: {
-    MatchOptions,
-    glob_with
-};
+use glob::glob_with;
 
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -34,22 +31,15 @@ const KERNEL_CMD: &str = "/proc/cmdline";
 // --- --- --- //
 
 fn main() {
-    let kernel_if_name: String;
-    let mac_address: MacAddress;
-    let config_dir: &Path;
-    let list_of_ifcfg_paths: Vec<String>;
-
-    let mut device_config_name: String;
-
     /* Read env variable INTERFACE in order to get names of if */
-    kernel_if_name = match read_env_interface(ENV) {
+    let kernel_if_name = match read_env_interface(ENV) {
         Some(val) => val,
         /* Error while processing ENV INTERFACE */
         None => std::process::exit(1)
     };
 
     /* Get MAC address of given interface */
-    mac_address = match get_mac_address(&kernel_if_name) {
+    let mac_address = match get_mac_address(&kernel_if_name) {
         Ok(Some(val)) => val,
         /* Error while getting MAC address of given network interface */
         _ => std::process::exit(1)
@@ -59,7 +49,7 @@ fn main() {
      * as they are documented in dracut.cmdline(7)
      * Example: ifname=test:aa:bb:cc:dd:ee:ff
      */
-    device_config_name = match scan_kernel_cmd(&mac_address) {
+    let mut device_config_name = match scan_kernel_cmd(&mac_address) {
         Ok(Some(name)) => name,
         _ => String::from("")
     };
@@ -67,8 +57,8 @@ fn main() {
     /* When device was not found at kernel cmd look into ifcfg files */
     if device_config_name.is_empty() {
         /* Scan config dir and look for ifcfg-* files */
-        config_dir = Path::new(CONFIG_DIR);
-        list_of_ifcfg_paths = match scan_config_dir(config_dir) {
+        let config_dir = Path::new(CONFIG_DIR);
+        let list_of_ifcfg_paths = match scan_config_dir(config_dir) {
             Some(val) => val,
             /* Error while getting list of ifcfg files from directory /etc/sysconfig/network-scripts/ */
             None => std::process::exit(1)
@@ -116,20 +106,15 @@ fn get_mac_address(if_name: &str) -> Result<Option<MacAddress>> {
 
 /* Scan directory /etc/sysconfig/network-scripts for ifcfg files */
 fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
-    let glob_options: MatchOptions;
-    let glob_patern: String;
-
-    let mut list_of_config_paths: Vec<String>;
-
-    glob_options = glob::MatchOptions {
+    let glob_options = glob::MatchOptions {
         case_sensitive: true,
         require_literal_separator: false,
         require_literal_leading_dot: false,
     };
 
-    glob_patern = config_dir.to_str()?.to_owned() + "/ifcfg-*";
+    let glob_patern = config_dir.to_str()?.to_owned() + "/ifcfg-*";
 
-    list_of_config_paths = vec![];
+    let mut list_of_config_paths = vec![];
 
     for entry in glob_with(&glob_patern, glob_options).unwrap() {
         match entry {
@@ -149,17 +134,10 @@ fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
 
 /* Scan ifcfg files and look for given HWADDR and return DEVICE name */
 fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Option<String>> {
-    let file: File;
-    let reader: BufReader<File>;
-
-    /* Needs to be Option in order to prevent Error: "borrow of possibly-uninitialized variable" */
-    let mut hwaddr: Option<MacAddress>;
-    let mut device: Option<String>;
-
-    file = File::open(config_file)?;
-    reader = BufReader::new(file);
-    hwaddr = None;
-    device = None;
+    let file = File::open(config_file)?;
+    let reader = BufReader::new(file);
+    let mut hwaddr: Option<MacAddress> = None;
+    let mut device: Option<String> = None;
 
     lazy_static! {
         /* Look for line that starts with DEVICE= and then store everything else in group */
@@ -213,17 +191,10 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Opti
 /* Scan kernel cmd and look for given hardware address and return new device name */
 #[allow(unused)]
 fn scan_kernel_cmd(mac_address: &MacAddress) -> Result<Option<String>> {
-    let file: File;
-    let reader: BufReader<File>;
-
-    /* Needs to be Option in order to prevent Error: "borrow of possibly-uninitialized variable" */
-    let mut hwaddr: Option<MacAddress>;
-    let mut device: Option<String>;
-
-    file = File::open(KERNEL_CMD).unwrap();
-    reader = BufReader::new(file);
-    hwaddr = None;
-    device = None;
+    let file = File::open(KERNEL_CMD).unwrap();
+    let reader = BufReader::new(file);
+    let mut hwaddr: Option<MacAddress> = None;
+    let mut device: Option<String> = None;
 
     lazy_static! {
         /* Look for paterns like this ifname=new_name:aa:BB:CC:DD:ee:ff at kernel command line */
