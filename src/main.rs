@@ -39,7 +39,7 @@ fn main() {
     };
 
     /* Get MAC address of given interface */
-    let mac_address = match get_mac_address(&kernel_if_name) {
+    let mac_address = match mac_address_by_name(&kernel_if_name) {
         Ok(Some(val)) => val,
         /* Error while getting MAC address of given network interface */
         _ => std::process::exit(1)
@@ -97,11 +97,6 @@ fn read_env_interface(env_name: &str) -> Option<String> {
         Ok(val) => Some(val),
         Err(_err) => None
     }
-}
-
-/* Get MAC address of given interface */
-fn get_mac_address(if_name: &str) -> Result<Option<MacAddress>> {
-    Ok(mac_address_by_name(if_name)?)
 }
 
 /* Scan directory /etc/sysconfig/network-scripts for ifcfg files */
