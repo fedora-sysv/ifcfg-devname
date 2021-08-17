@@ -25,7 +25,7 @@ type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
 
 const ENV: &str = "INTERFACE";
 const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
-const KERNEL_CMD: &str = "/proc/cmdline";
+const KERNEL_CMDLINE: &str = "/proc/cmdline";
 
 
 // --- --- --- //
@@ -49,12 +49,12 @@ fn main() {
      * as they are documented in dracut.cmdline(7)
      * Example: ifname=test:aa:bb:cc:dd:ee:ff
      */
-    let mut device_config_name = match scan_kernel_cmd(&mac_address) {
+    let mut device_config_name = match parse_kernel_cmdline(&mac_address) {
         Ok(Some(name)) => name,
         _ => String::from("")
     };
 
-    /* When device was not found at kernel cmd look into ifcfg files */
+    /* When device was not found at kernel cmdline look into ifcfg files */
     if device_config_name.is_empty() {
         /* Scan config dir and look for ifcfg-* files */
         let config_dir = Path::new(CONFIG_DIR);
@@ -69,7 +69,7 @@ fn main() {
         'config_loop: for path in list_of_ifcfg_paths {
             let config_file_path: &Path = Path::new(&path);
 
-            match scan_config_file(config_file_path, &mac_address) {
+            match parse_config_file(config_file_path, &mac_address) {
                 Ok(Some(name)) => {
                     device_config_name = format!("{}", name);
                     break 'config_loop;
@@ -133,7 +133,7 @@ fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
 }
 
 /* Scan ifcfg files and look for given HWADDR and return DEVICE name */
-fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Option<String>> {
+fn parse_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Option<String>> {
     let file = File::open(config_file)?;
     let reader = BufReader::new(file);
     let mut hwaddr: Option<MacAddress> = None;
@@ -188,10 +188,10 @@ fn scan_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Opti
     }
 }
 
-/* Scan kernel cmd and look for given hardware address and return new device name */
+/* Scan kernel cmdline and look for given hardware address and return new device name */
 #[allow(unused)]
-fn scan_kernel_cmd(mac_address: &MacAddress) -> Result<Option<String>> {
-    let file = File::open(KERNEL_CMD).unwrap();
+fn parse_kernel_cmdline(mac_address: &MacAddress) -> Result<Option<String>> {
+    let file = File::open(KERNEL_CMDLINE).unwrap();
     let reader = BufReader::new(file);
     let mut hwaddr: Option<MacAddress> = None;
     let mut device: Option<String> = None;
