@@ -1,3 +1,7 @@
+extern crate syslog;
+#[macro_use]
+extern crate log;
+
 use std::env;
 use std::error;
 use std::path::Path;
@@ -17,6 +21,14 @@ use glob::glob_with;
 use lazy_static::lazy_static;
 use regex::Regex;
 
+use syslog:: {
+    Facility,
+    Formatter3164,
+    BasicLogger
+};
+
+use log::LevelFilter;
+
 
 // --- --- --- //
 
@@ -32,18 +44,37 @@ const KERNEL_CMDLINE: &str = "/proc/cmdline";
 // --- --- --- //
 
 fn main() -> Result<()> {
+    /* Setup syslog logger */ 
+    let formatter = Formatter3164 {
+        facility: Facility::LOG_USER,
+        hostname: None,
+        process: "ifcfg_devname".into(),
+        pid: 0,
+    };
+
+    let logger = syslog::unix(formatter).expect("[ifcfg_devname]: could not connect to syslog");
+    /* This is a simple convenience wrapper over set_logger */
+    log::set_boxed_logger(Box::new(BasicLogger::new(logger)))
+        .map(|()| log::set_max_level(LevelFilter::Info))?;
+
+    debug!("Connected to syslog");
+
     /* Read env variable INTERFACE in order to get names of if */
     let kernel_if_name = match env::var_os(ENV).unwrap().into_string() {
         Ok(val) => val,
-        /* Error while processing ENV INTERFACE */
-        Err(_err) => std::process::exit(1)
+        Err(_err) => {
+            warn!("Error while processing ENV INTERFACE");
+            std::process::exit(1)
+        }
     };
 
     /* Get MAC address of given interface */
     let mac_address = match mac_address_by_name(&kernel_if_name) {
         Ok(Some(val)) => val,
-        /* Error while getting MAC address of given network interface */
-        _ => std::process::exit(1)
+        _ => {
+            warn!("Error while getting MAC address of given network interface ({})", kernel_if_name);
+            std::process::exit(1)
+        }
     }; 
     
     /* Let's check kernel cmdline and also process ifname= entries
@@ -52,7 +83,10 @@ fn main() -> Result<()> {
      */
     let mut device_config_name = match parse_kernel_cmdline(&mac_address) {
         Ok(Some(name)) => name,
-        _ => String::from("")
+        _ => {
+            debug!("New device name for '{}' wasn't found at kernel cmdline", kernel_if_name);
+            String::from("")
+        }
     };
 
     /* When device was not found at kernel cmdline look into ifcfg files */
@@ -61,8 +95,10 @@ fn main() -> Result<()> {
         let config_dir = Path::new(CONFIG_DIR);
         let list_of_ifcfg_paths = match scan_config_dir(config_dir) {
             Some(val) => val,
-            /* Error while getting list of ifcfg files from directory /etc/sysconfig/network-scripts/ */
-            None => std::process::exit(1)
+            None => {
+                warn!("Error while getting list of ifcfg files from directory /etc/sysconfig/network-scripts/");
+                std::process::exit(1)
+            }
         };
 
         /* Loop through ifcfg configurations and look for matching MAC address and return DEVICE name */
@@ -84,7 +120,7 @@ fn main() -> Result<()> {
         println!("{}", device_config_name);
         Ok(())
     } else {
-        /* Device name or MAC address weren't found in ifcfg files. */
+        warn!("Device name or MAC address weren't found in ifcfg files.");
         std::process::exit(1);
     }
 }
