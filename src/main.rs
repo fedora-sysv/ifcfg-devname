@@ -31,7 +31,7 @@ const KERNEL_CMDLINE: &str = "/proc/cmdline";
 
 // --- --- --- //
 
-fn main() {
+fn main() -> Result<()> {
     /* Read env variable INTERFACE in order to get names of if */
     let kernel_if_name = match env::var_os(ENV).unwrap().into_string() {
         Ok(val) => val,
@@ -82,6 +82,7 @@ fn main() {
 
     if !device_config_name.is_empty() {
         println!("{}", device_config_name);
+        Ok(())
     } else {
         /* Device name or MAC address weren't found in ifcfg files. */
         std::process::exit(1);
