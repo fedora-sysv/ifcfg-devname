@@ -20,7 +20,8 @@ use regex::Regex;
 
 // --- --- --- //
 
-/* Implement conversion from any type that implements the Error trait into the trait object Box<Error> */
+/* Implement conversion from any type that implements the Error trait into the trait object Box<Error>
+ * https://doc.rust-lang.org/std/keyword.dyn.html */
 type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
 
 const ENV: &str = "INTERFACE";
