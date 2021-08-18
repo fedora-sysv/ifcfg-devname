@@ -183,8 +183,15 @@ fn parse_kernel_cmdline(mac_address: &MacAddress) -> Result<Option<String>> {
     let mut device: Option<String> = None;
 
     lazy_static! {
-        /* Look for paterns like this ifname=new_name:aa:BB:CC:DD:ee:ff at kernel command line */
-        static ref REGEX_DEVICE_HWADDR_PAIR: Regex = Regex::new(r"ifname=(\S+?):(\S*)").unwrap();
+        /* Look for paterns like this ifname=new_name:aa:BB:CC:DD:ee:ff at kernel command line
+         * regex: ifname=(\S[^:]{1,15}):(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))
+         * ifname=(group1):(group2) - look for patern starting with `ifname=` folowing with two groups separated with `:` character
+         * group1: (\S[^:]{1,15}) - match non-whitespace characters ; minimum 1 and maximum 15 ; do not match `:` character
+         * group2: (([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})) - match 48-bit hw address expressed in hexadecimal system ; each of inner 8-bits are separated with `:` character ; case insensitive
+         * example: ifname=new-devname007:00:1b:44:11:3A:B7
+         *                 ^^^^^^^^^^^^^^ ~~~~~~~~~~~~~~~~~
+         *                 new dev name   hw address of if */
+        static ref REGEX_DEVICE_HWADDR_PAIR: Regex = Regex::new(r"ifname=(\S[^:]{1,15}):(([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}))").unwrap();
     }
 
     /* Read lines of kernel command line and look for ifname= */
