@@ -62,8 +62,8 @@ fn main() -> Result<()> {
     /* Read env variable INTERFACE in order to get names of if */
     let kernel_if_name = match env::var_os(ENV).unwrap().into_string() {
         Ok(val) => val,
-        Err(_err) => {
-            warn!("Error while processing ENV INTERFACE");
+        Err(err) => {
+            warn!("Error while processing ENV INTERFACE - {}", err.to_string_lossy());
             std::process::exit(1)
         }
     };
