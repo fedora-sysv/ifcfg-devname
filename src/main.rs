@@ -227,9 +227,10 @@ fn parse_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Opt
 #[allow(unused)]
 fn parse_kernel_cmdline(mac_address: &MacAddress) -> Result<Option<String>> {
     let file = File::open(KERNEL_CMDLINE).unwrap();
-    let reader = BufReader::new(file);
+    let mut reader = BufReader::new(file);
     let mut hwaddr: Option<MacAddress> = None;
     let mut device: Option<String> = None;
+    let mut kernel_cmdline = String::new();
 
     lazy_static! {
         /* Look for patterns like this ifname=new_name:aa:BB:CC:DD:ee:ff at kernel command line
@@ -243,33 +244,31 @@ fn parse_kernel_cmdline(mac_address: &MacAddress) -> Result<Option<String>> {
         static ref REGEX_DEVICE_HWADDR_PAIR: Regex = Regex::new(r"ifname=(\S[^:]{1,15}):(([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}))").unwrap();
     }
 
-    /* Read lines of kernel command line and look for ifname= */
-    for line in reader.lines() {
-        let line = line?;
+    /* Read kernel command line and look for ifname= */
+    reader.read_line(&mut kernel_cmdline)?;
 
-        /* Look for ifname= */
-        if REGEX_DEVICE_HWADDR_PAIR.is_match(&line) {
-            for capture in REGEX_DEVICE_HWADDR_PAIR.captures_iter(&line) {
-                device = Some(capture[1].parse()?);
-                hwaddr = Some(capture[2].parse()?);
+    /* Look for ifname= */
+    if REGEX_DEVICE_HWADDR_PAIR.is_match(&kernel_cmdline) {
+        for capture in REGEX_DEVICE_HWADDR_PAIR.captures_iter(&kernel_cmdline) {
+            device = Some(capture[1].parse()?);
+            hwaddr = Some(capture[2].parse()?);
                 
-                /* Check MAC */
-                if hwaddr.is_some() {
-                    if hwaddr
-                        .unwrap()
-                        .to_string()
-                        .to_owned()
-                        .to_lowercase()
-                        .eq(
-                            &mac_address
-                                .to_string()
-                                .to_owned()
-                                .to_lowercase()
-                    ) {
-                        break;
-                    } else {
-                        device = None;
-                    }
+            /* Check MAC */
+            if hwaddr.is_some() {
+                if hwaddr
+                    .unwrap()
+                    .to_string()
+                    .to_owned()
+                    .to_lowercase()
+                    .eq(
+                        &mac_address
+                            .to_string()
+                            .to_owned()
+                            .to_lowercase()
+                ) {
+                    break;
+                } else {
+                    device = None;
                 }
             }
         }
