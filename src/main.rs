@@ -75,13 +75,15 @@ fn main() -> Result<()> {
             warn!("Error while getting MAC address of given network interface ({})", kernel_if_name);
             std::process::exit(1)
         }
-    }; 
+    };
+
+
     
     /* Let's check kernel cmdline and also process ifname= entries
      * as they are documented in dracut.cmdline(7)
      * Example: ifname=test:aa:bb:cc:dd:ee:ff
      */
-    let mut device_config_name = match parse_kernel_cmdline(&mac_address) {
+    let mut device_config_name = match parse_kernel_cmdline(&mac_address, KERNEL_CMDLINE) {
         Ok(Some(name)) => name,
         _ => {
             debug!("New device name for '{}' wasn't found at kernel cmdline", kernel_if_name);
@@ -225,8 +227,8 @@ fn parse_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Opt
 
 /* Scan kernel cmdline and look for given hardware address and return new device name */
 #[allow(unused)]
-fn parse_kernel_cmdline(mac_address: &MacAddress) -> Result<Option<String>> {
-    let file = File::open(KERNEL_CMDLINE).unwrap();
+fn parse_kernel_cmdline(mac_address: &MacAddress, kernel_cmdline_path: &str) -> Result<Option<String>> {
+    let file = File::open(kernel_cmdline_path).unwrap();
     let mut reader = BufReader::new(file);
     let mut hwaddr: Option<MacAddress> = None;
     let mut device: Option<String> = None;
@@ -278,4 +280,34 @@ fn parse_kernel_cmdline(mac_address: &MacAddress) -> Result<Option<String>> {
     match device {
         dev => Ok(dev)
     }
+}
+
+
+// --- Unit tests --- //
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    const ENV: &str = "INTERFACE";
+    const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
+    const KERNEL_CMDLINE: &str = "/proc/cmdline";
+    
+    // TODO: parsing of kernel cmdline
+    #[test]
+    fn kernel_cmdline_parser() {
+        let mut device_config_name = match parse_kernel_cmdline(&mac_address, KERNEL_CMDLINE) {
+            Ok(Some(name)) => name,
+            _ => {
+                debug!("New device name for '{}' wasn't found at kernel cmdline", kernel_if_name);
+                String::from("")
+            }
+        };
+    }
+
+    // TODO: existence of /etc/sysconfig/network-scripts
+
+
+    // TODO: scan of config dir
+
+    // TODO: parsing of ifcfg file
 }
