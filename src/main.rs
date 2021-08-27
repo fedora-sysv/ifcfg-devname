@@ -63,7 +63,7 @@ fn main() -> Result<()> {
     let kernel_if_name = match env::var_os(ENV).unwrap().into_string() {
         Ok(val) => val,
         Err(err) => {
-            warn!("Error while processing ENV INTERFACE - {}", err.to_string_lossy());
+            error!("Error while processing ENV INTERFACE - {}", err.to_string_lossy());
             std::process::exit(1)
         }
     };
@@ -72,19 +72,22 @@ fn main() -> Result<()> {
     let mac_address = match mac_address_by_name(&kernel_if_name) {
         Ok(Some(val)) => val,
         _ => {
-            warn!("Error while getting MAC address of given network interface ({})", kernel_if_name);
+            error!("Error while getting MAC address of given network interface ({})", kernel_if_name);
             std::process::exit(1)
         }
     };
-
-    // TODO: CHECK new name for eth patern if so... WARNING!! (probably function)
 
     /* Let's check kernel cmdline and also process ifname= entries
      * as they are documented in dracut.cmdline(7)
      * Example: ifname=test:aa:bb:cc:dd:ee:ff
      */
     let mut device_config_name = match parse_kernel_cmdline(&mac_address, KERNEL_CMDLINE) {
-        Ok(Some(name)) => name,
+        Ok(Some(name)) => {
+            if check_new_devname(name.clone()).is_some() {
+                warn!("Warning!! Please, do NOT use kernel like devnames (eth0, etc.) as new names for your network interface devices! Used name: '{}'", name);
+            }
+            name
+        },
         _ => {
             debug!("New device name for '{}' wasn't found at kernel cmdline", kernel_if_name);
             String::from("")
@@ -98,7 +101,7 @@ fn main() -> Result<()> {
         let list_of_ifcfg_paths = match scan_config_dir(config_dir) {
             Some(val) => val,
             None => {
-                warn!("Error while getting list of ifcfg files from directory /etc/sysconfig/network-scripts/");
+                error!("Error while getting list of ifcfg files from directory /etc/sysconfig/network-scripts/");
                 std::process::exit(1)
             }
         };
@@ -110,6 +113,9 @@ fn main() -> Result<()> {
 
             match parse_config_file(config_file_path, &mac_address) {
                 Ok(Some(name)) => {
+                    if check_new_devname(name.clone()).is_some() {
+                        warn!("Warning!! Please, do NOT use kernel like devnames (eth0, etc.) as new names for your network interface devices! Used name: '{}'", name);
+                    }
                     device_config_name = format!("{}", name);
                     break 'config_loop;
                 }
@@ -154,74 +160,6 @@ fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
         Some(list_of_config_paths)
     } else {
         None
-    }
-}
-
-/* Scan ifcfg files and look for given HWADDR and return DEVICE name */
-fn parse_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Option<String>> {
-    let file = File::open(config_file)?;
-    let reader = BufReader::new(file);
-    let mut hwaddr: Option<MacAddress> = None;
-    let mut device: Option<String> = None;
-
-    lazy_static! {
-        /* Look for line that starts with DEVICE= and then store everything else in group
-         * regex: ^DEVICE=(\S[^:]{1,15})
-         * ^DEVICE=(group1) - look for line starting with `^DEVICE=` following with group of characters describing new device name
-         * group1: (\S[^:]{1,15}) - match non-whitespace characters ; minimum 1 and maximum 15 ; do not match `:` character
-         * example: DEVICE=new-devname007
-         *                 ^^^^^^^^^^^^^^
-         *                 new dev name */
-        static ref REGEX_DEVICE: Regex = Regex::new(r"^DEVICE=(\S[^:]{1,15})").unwrap();
-
-        /* Look for line with mac address and store its value in group for later
-         * regex: ^HWADDR=(([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}))
-         * ^HWADDR=(group1) - look for line starting with `^HWADDR=` following with group of characters describing hw address of device
-         * group1: (([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})) - match 48-bit hw address expressed in hexadecimal system ; each of inner 8-bits are separated with `:` character ; case insensitive
-         * example: HWADDR=00:1b:44:11:3A:B7
-         *                 ^^^^^^^^^^^^^^^^^
-         *                 hw address of if */
-        static ref REGEX_HWADDR: Regex = Regex::new(r"^HWADDR=(([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}))").unwrap();
-    }
-
-    /* Read lines of given file and look for DEVICE= and HWADDR= */
-    for line in reader.lines() {
-        let line = line?;
-
-        /* Look for HWADDR= */
-        if REGEX_HWADDR.is_match(&line) {
-            for capture in REGEX_HWADDR.captures_iter(&line) {
-                hwaddr = Some(capture[1].parse()?);
-            }
-        }
-
-        /* Look for DEVICE= */
-        if REGEX_DEVICE.is_match(&line) {
-            for capture in REGEX_DEVICE.captures_iter(&line) {
-                device = Some(capture[1].parse()?);
-            }
-        }
-    }
-
-    if hwaddr.is_some() {
-        if hwaddr
-            .unwrap()
-            .to_string()
-            .to_owned()
-            .to_lowercase()
-            .ne(
-                &mac_address
-                    .to_string()
-                    .to_owned()
-                    .to_lowercase()
-        ) {
-            device = None;
-        }
-    }
-
-    /* When MAC doesn't match it returns OK(None) */
-    match device {
-        dev => Ok(dev)
     }
 }
 
@@ -272,6 +210,8 @@ fn parse_kernel_cmdline(mac_address: &MacAddress, kernel_cmdline_path: &str) -> 
                 } else {
                     device = None;
                 }
+            } else {
+                device = None;
             }
         }
     }
@@ -279,6 +219,98 @@ fn parse_kernel_cmdline(mac_address: &MacAddress, kernel_cmdline_path: &str) -> 
     /* When MAC doesn't match it returns OK(None) */
     match device {
         dev => Ok(dev)
+    }
+}
+
+/* Scan ifcfg files and look for given HWADDR and return DEVICE name */
+fn parse_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Option<String>> {
+    let file = File::open(config_file)?;
+    let reader = BufReader::new(file);
+    let mut hwaddr: Option<MacAddress> = None;
+    let mut device: Option<String> = None;
+
+    lazy_static! {
+        /* Look for line that starts with DEVICE= and then store everything else in group
+         * regex: ^DEVICE=(\S[^:]{1,15})
+         * ^DEVICE=(group1) - look for line starting with `DEVICE=` following with group of characters describing new device name
+         * group1: (\S[^:]{1,15}) - match non-whitespace characters ; minimum 1 and maximum 15 ; do not match `:` character
+         * example: DEVICE=new-devname007
+         *                 ^^^^^^^^^^^^^^
+         *                 new dev name */
+        static ref REGEX_DEVICE: Regex = Regex::new(r"^DEVICE=(\S[^:]{1,15})").unwrap();
+
+        /* Look for line with mac address and store its value in group for later
+         * regex: ^HWADDR=(([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}))
+         * ^HWADDR=(group1) - look for line starting with `HWADDR=` following with group of characters describing hw address of device
+         * group1: (([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})) - match 48-bit hw address expressed in hexadecimal system ; each of inner 8-bits are separated with `:` character ; case insensitive
+         * example: HWADDR=00:1b:44:11:3A:B7
+         *                 ^^^^^^^^^^^^^^^^^
+         *                 hw address of if */
+        static ref REGEX_HWADDR: Regex = Regex::new(r"^HWADDR=(([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}))").unwrap();
+    }
+
+    /* Read lines of given file and look for DEVICE= and HWADDR= */
+    for line in reader.lines() {
+        let line = line?;
+
+        /* Look for HWADDR= */
+        if REGEX_HWADDR.is_match(&line) {
+            for capture in REGEX_HWADDR.captures_iter(&line) {
+                hwaddr = Some(capture[1].parse()?);
+            }
+        }
+
+        /* Look for DEVICE= */
+        if REGEX_DEVICE.is_match(&line) {
+            for capture in REGEX_DEVICE.captures_iter(&line) {
+                device = Some(capture[1].parse()?);
+            }
+        }
+    }
+
+    if hwaddr.is_some() {
+        if hwaddr
+            .unwrap()
+            .to_string()
+            .to_owned()
+            .to_lowercase()
+            .ne(
+                &mac_address
+                    .to_string()
+                    .to_owned()
+                    .to_lowercase()
+        ) {
+            device = None;
+        }
+    } else {
+        device = None;
+    }
+
+    /* When MAC doesn't match it returns OK(None) */
+    match device {
+        dev => Ok(dev)
+    }
+}
+
+/* Check if new devname is equal to kernel standard devname (eth0, etc.)
+ * If such a name is detected return Some(()) else None */
+fn check_new_devname(new_devname: String) -> Option<()> {
+    lazy_static! {
+        /* Check if new devname is equal to kernel standard devname (eth0, etc.)
+         * regex: ^eth\d+$
+         * ^eth - look for name starting with `eth`
+         * \d+$ - following with set of numbers [0-9]
+         * example: eth1234 | eth1234a
+         *          ^^^^^^^^  ~~~~~~~~
+         *           MATCH    NO MATCH */
+        static ref IS_NEW_DEVNAME_ETH_LIKE: Regex = Regex::new(r"^eth\d+$").unwrap();
+    }
+
+    /* Look for HWADDR= */
+    if IS_NEW_DEVNAME_ETH_LIKE.is_match(&new_devname) {
+        Some(())
+    } else {
+        None
     }
 }
 
