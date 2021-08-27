@@ -77,8 +77,8 @@ fn main() -> Result<()> {
         }
     };
 
+    // TODO: CHECK new name for eth patern if so... WARNING!! (probably function)
 
-    
     /* Let's check kernel cmdline and also process ifname= entries
      * as they are documented in dracut.cmdline(7)
      * Example: ifname=test:aa:bb:cc:dd:ee:ff
