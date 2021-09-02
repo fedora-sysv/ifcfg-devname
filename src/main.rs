@@ -342,4 +342,6 @@ mod test {
     // TODO: scan of config dir
 
     // TODO: parsing of ifcfg file
+
+    // TODO: fake ifcfg files and kernel cmdlines
 }
