@@ -319,21 +319,23 @@ fn check_new_devname(new_devname: String) -> Option<()> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use std::str::FromStr;
 
-    const ENV: &str = "INTERFACE";
-    const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
-    const KERNEL_CMDLINE: &str = "/proc/cmdline";
+    const TEST_CONFIG_DIR: &str = "./tests/ifcfgs";
+    const TEST_KERNEL_CMDLINE_DIR: &str = "./tests/cmdlines";
     
     // TODO: parsing of kernel cmdline
     #[test]
     fn kernel_cmdline_parser() {
-        let mut device_config_name = match parse_kernel_cmdline(&mac_address, KERNEL_CMDLINE) {
+        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:FF").unwrap();
+        let device_config_name = match parse_kernel_cmdline(&mac_address, "./tests/cmdlines/cmdline") {
             Ok(Some(name)) => name,
             _ => {
-                debug!("New device name for '{}' wasn't found at kernel cmdline", kernel_if_name);
                 String::from("")
             }
         };
+
+        assert_eq!("test", device_config_name);
     }
 
     // TODO: existence of /etc/sysconfig/network-scripts
