@@ -338,12 +338,15 @@ mod test {
         assert_eq!("test", device_config_name);
     }
 
-    // TODO: existence of /etc/sysconfig/network-scripts
-
-
     // TODO: scan of config dir
+    #[test]
+    fn config_dir_scanner() {
+
+    }
 
     // TODO: parsing of ifcfg file
+    #[test]
+    fn ifcfg_parser() {
 
-    // TODO: fake ifcfg files and kernel cmdlines
+    }
 }
