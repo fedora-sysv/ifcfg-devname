@@ -341,12 +341,14 @@ mod test {
     // TODO: scan of config dir
     #[test]
     fn config_dir_scanner() {
-
+        // scan test ifcfg dir
     }
 
     // TODO: parsing of ifcfg file
     #[test]
     fn ifcfg_parser() {
-
+        // test ifcfg parser
     }
+
+    // TODO: logger
 }
