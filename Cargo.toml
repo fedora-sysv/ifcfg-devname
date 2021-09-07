@@ -19,3 +19,7 @@ lazy_static = "1.4.0"
 # logging
 syslog = "5.0.0"
 log = "0.4.14"
+
+[dev-dependencies]
+assert_cmd = "2.0.1"
+predicates = "2.0.2"
