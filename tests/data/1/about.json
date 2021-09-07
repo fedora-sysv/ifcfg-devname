@@ -1,0 +1,13 @@
+{
+    "name": "[dataset 1] - kernel cmdline - should PASS",
+    "description": "",
+
+    "input": {
+        "interface": "dataset_1_if",
+        "hw_address": "AA:BB:CC:DD:EE:F1"
+    },
+    "output": {
+        "should_fail": false,
+        "expected_name": "dataset_1" 
+    }
+}

@@ -7,6 +7,10 @@ use assert_cmd::Command; // Add methods on commands
 fn integration_test() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("ifcfg_devname")?;
 
+    // read dir data/
+    // for each dataset run binary ifcfg_devname
+    // print outputs/results
+    
     let assert = cmd
         .env("INTERFACE", "new_name")
         .args(&["./cmdlines/cmdline", "./ifcfgs/", "AA:BB:CC:DD:EE:FF"])
