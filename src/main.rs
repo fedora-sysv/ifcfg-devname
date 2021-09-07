@@ -44,6 +44,9 @@ const KERNEL_CMDLINE: &str = "/proc/cmdline";
 // --- --- --- //
 
 fn main() -> Result<()> {
+    /* Store any commandline arguments */
+    let args: Vec<String> = env::args().collect();
+
     /* Setup syslog logger */ 
     let formatter = Formatter3164 {
         facility: Facility::LOG_USER,
@@ -77,11 +80,19 @@ fn main() -> Result<()> {
         }
     };
 
+    
+    /* Check for alternative path to kernel cmdline */
+    let kernel_cmdline = if args[1].is_empty() {
+        KERNEL_CMDLINE
+    } else {
+        &args[1]
+    };
+
     /* Let's check kernel cmdline and also process ifname= entries
      * as they are documented in dracut.cmdline(7)
      * Example: ifname=test:aa:bb:cc:dd:ee:ff
      */
-    let mut device_config_name = match parse_kernel_cmdline(&mac_address, KERNEL_CMDLINE) {
+    let mut device_config_name = match parse_kernel_cmdline(&mac_address, kernel_cmdline) {
         Ok(Some(name)) => {
             if check_new_devname(name.clone()).is_some() {
                 warn!("Warning!! Please, do NOT use kernel like devnames (eth0, etc.) as new names for your network interface devices! Used name: '{}'", name);
@@ -96,8 +107,15 @@ fn main() -> Result<()> {
 
     /* When device was not found at kernel cmdline look into ifcfg files */
     if device_config_name.is_empty() {
+        /* Check for alternative path to config dir */
+        let config_dir = if args[2].is_empty() {
+            CONFIG_DIR
+        } else {
+            &args[2]
+        };
+
         /* Scan config dir and look for ifcfg-* files */
-        let config_dir = Path::new(CONFIG_DIR);
+        let config_dir = Path::new(config_dir);
         let list_of_ifcfg_paths = match scan_config_dir(config_dir) {
             Some(val) => val,
             None => {
