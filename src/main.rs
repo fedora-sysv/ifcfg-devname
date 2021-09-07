@@ -335,7 +335,7 @@ fn check_new_devname(new_devname: String) -> Option<()> {
 
 // --- Unit tests --- //
 #[cfg(test)]
-mod test {
+mod should {
     use super::*;
     use std::str::FromStr;
 
@@ -344,7 +344,7 @@ mod test {
     
     // TODO: parsing of kernel cmdline
     #[test]
-    fn kernel_cmdline_parser() {
+    fn parse_kernel_cmdline() {
         let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:FF").unwrap();
         let device_config_name = match parse_kernel_cmdline(&mac_address, "./tests/cmdlines/cmdline") {
             Ok(Some(name)) => name,
@@ -358,13 +358,13 @@ mod test {
 
     // TODO: scan of config dir
     #[test]
-    fn config_dir_scanner() {
+    fn scan_config_dir() {
         // scan test ifcfg dir
     }
 
     // TODO: parsing of ifcfg file
     #[test]
-    fn ifcfg_parser() {
+    fn parse_ifcfg_files() {
         // test ifcfg parser
     }
 
