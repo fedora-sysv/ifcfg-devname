@@ -343,18 +343,18 @@ mod should {
     const TEST_KERNEL_CMDLINE_DIR: &str = "./tests/cmdlines";
     
     // TODO: parsing of kernel cmdline
-    #[test]
-    fn parse_kernel_cmdline() {
-        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:FF").unwrap();
-        let device_config_name = match parse_kernel_cmdline(&mac_address, "./tests/cmdlines/cmdline") {
-            Ok(Some(name)) => name,
-            _ => {
-                String::from("")
-            }
-        };
+    // #[test]
+    // fn parse_kernel_cmdline() {
+    //     let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:FF").unwrap();
+    //     let device_config_name = match parse_kernel_cmdline(&mac_address, "./tests/cmdlines/cmdline") {
+    //         Ok(Some(name)) => name,
+    //         _ => {
+    //             String::from("")
+    //         }
+    //     };
 
-        assert_eq!("test", device_config_name);
-    }
+    //     assert_eq!("test", device_config_name);
+    // }
 
     // TODO: scan of config dir
     #[test]
