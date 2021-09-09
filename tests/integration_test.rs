@@ -41,11 +41,10 @@ struct DatasetOutput {
 
 #[test]
 fn integration_test() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin("ifcfg_devname")?;
-
     /* Loop through datasets in directory ./data */
     let data_dir = Path::new("./tests/data");
     for entry in fs::read_dir(data_dir)? {
+        let mut cmd = Command::cargo_bin("ifcfg_devname")?;
         let path = entry?.path();
 
         /* For each dataset; load configuration and run ifcfg_devname binary */
@@ -68,6 +67,8 @@ fn integration_test() -> Result<(), Box<dyn std::error::Error>> {
                     dataset_configuration.input.hw_address                      /* hw address */
                 ])
                 .assert();
+
+            println!("{}", dataset_configuration.output.expected_name);
 
             /* Test result evaluation */
             if dataset_configuration.output.should_fail {

@@ -126,11 +126,11 @@ fn main() -> Result<()> {
         };
 
         /* Scan config dir and look for ifcfg-* files */
-        let config_dir = Path::new(config_dir);
-        let list_of_ifcfg_paths = match scan_config_dir(config_dir) {
+        let config_dir_path = Path::new(config_dir);
+        let list_of_ifcfg_paths = match scan_config_dir(config_dir_path) {
             Some(val) => val,
             None => {
-                error!("Error while getting list of ifcfg files from directory /etc/sysconfig/network-scripts/");
+                error!("Error while getting list of ifcfg files from directory {}", config_dir);
                 std::process::exit(1)
             }
         };
