@@ -68,13 +68,11 @@ fn integration_test() -> Result<(), Box<dyn std::error::Error>> {
                 ])
                 .assert();
 
-            println!("{}", dataset_configuration.output.expected_name);
-
             /* Test result evaluation */
             if dataset_configuration.output.should_fail {
                 dataset_assert
                     .failure()
-                    .code(1);
+                    .code(1);   /* Expected Error code */
             } else {
                 dataset_assert
                     .success()
