@@ -78,7 +78,7 @@ fn integration_test() -> Result<(), Box<dyn std::error::Error>> {
             } else {
                 dataset_assert
                     .success()
-                    .stdout(predicate::str::contains(dataset_configuration.output.expected_name));
+                    .stdout(predicate::str::is_match(dataset_configuration.output.expected_name)?);
             }
             
         }
