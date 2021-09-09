@@ -15,6 +15,7 @@ use mac_address:: {
     mac_address_by_name,
     MacAddress
 };
+use std::str::FromStr;
 
 use glob::glob_with;
 
@@ -47,6 +48,7 @@ fn main() -> Result<()> {
     /* Store any commandline arguments */
     let args: Vec<String> = env::args().collect();
 
+
     /* Setup syslog logger */ 
     let formatter = Formatter3164 {
         facility: Facility::LOG_USER,
@@ -62,6 +64,7 @@ fn main() -> Result<()> {
 
     debug!("Connected to syslog");
 
+
     /* Read env variable INTERFACE in order to get names of if */
     let kernel_if_name = match env::var_os(ENV).unwrap().into_string() {
         Ok(val) => val,
@@ -71,13 +74,19 @@ fn main() -> Result<()> {
         }
     };
 
-    /* Get MAC address of given interface */
-    let mac_address = match mac_address_by_name(&kernel_if_name) {
-        Ok(Some(val)) => val,
-        _ => {
-            error!("Error while getting MAC address of given network interface ({})", kernel_if_name);
-            std::process::exit(1)
+    
+    /* Check for testing hw address passed via arg */
+    let mac_address = if args[3].is_empty() {
+        /* Get MAC address of given interface */
+        match mac_address_by_name(&kernel_if_name) {
+            Ok(Some(val)) => val,
+            _ => {
+                error!("Error while getting MAC address of given network interface ({})", kernel_if_name);
+                std::process::exit(1)
+            }
         }
+    } else {
+        MacAddress::from_str(&args[3])?
     };
 
     
@@ -87,6 +96,7 @@ fn main() -> Result<()> {
     } else {
         &args[1]
     };
+
 
     /* Let's check kernel cmdline and also process ifname= entries
      * as they are documented in dracut.cmdline(7)
@@ -104,6 +114,7 @@ fn main() -> Result<()> {
             String::from("")
         }
     };
+
 
     /* When device was not found at kernel cmdline look into ifcfg files */
     if device_config_name.is_empty() {
@@ -141,6 +152,7 @@ fn main() -> Result<()> {
             }
         }
     }
+
 
     if !device_config_name.is_empty() {
         println!("{}", device_config_name);

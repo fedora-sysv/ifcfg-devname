@@ -44,8 +44,6 @@ struct DatasetOutput {
 fn integration_test() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("ifcfg_devname")?;
 
-    // print outputs/results
-
     /* Loop through datasets in directory ./data */
     let data_dir = Path::new("./tests/data");
     for entry in fs::read_dir(data_dir)? {
