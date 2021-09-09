@@ -1,14 +1,13 @@
-// TODO: https://rust-cli.github.io/book/tutorial/testing.html
-// ? Could be great to use: https://blog.cyplo.net/posts/2018/12/generate-rust-tests-from-data/
-
 use std::path::Path;
 use std::fs::{
     self
 };
 
-use assert_cmd::Command; // Add methods on commands
-use predicates::prelude::*; // Used for writing assertions
+/* Command execution */
+use assert_cmd::Command;
+use predicates::prelude::*;
 
+/* JSON */
 use serde::{
     Deserialize,
     Serialize
