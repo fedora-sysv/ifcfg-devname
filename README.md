@@ -14,7 +14,7 @@ INTERFACE=eth0 cargo run --release
 
 Environment variable **INTERFACE** takes name of the interface.
 
-If to wish to run integration tests and unit tests, you can do so by:
+If you wish to run integration tests and unit tests, you can do so by:
 
 ```
 cargo test
