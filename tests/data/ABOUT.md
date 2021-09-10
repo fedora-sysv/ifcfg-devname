@@ -9,4 +9,3 @@ Integration tests of ``ifcfg_devname`` uses multiple datasets to ensure correct 
 * [[``2``](./2/)] - Is ``ifcfg_devname`` able to get new device name from ifcfg configuration - should [``PASS``]
 * [[``3``](./3/)] - Missing configuration for new device name - should [``FAIL``]
 * [[``4``](./4/)] - Missing configuration for new device name - should [``FAIL``]
-* [[``5``](./5/)] -  - should [``PASS``]
