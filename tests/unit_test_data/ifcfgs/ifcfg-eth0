@@ -1,0 +1,8 @@
+# Example ifcfg config
+DEVICE=correct_if_name
+BOOTPROTO=none
+ONBOOT=yes
+NETMASK=255.255.255.0
+IPADDR=10.0.1.27
+HWADDR=AA:BB:CC:DD:EE:3F
+USERCTL=no

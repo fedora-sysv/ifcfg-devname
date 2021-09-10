@@ -387,17 +387,46 @@ mod should {
         assert_eq!("unit_test_2", device_config_name);
     }
 
-    // TODO: scan of config dir
+
+    // --- Scaning and parsing of ifcfg configuration files - Unit tests --- //
     #[test]
     fn scan_ifcfg_dir() {
-        // scan test ifcfg dir
+        let ifcfg_dir_path = Path::new(TEST_CONFIG_DIR);
+
+        let test_result = match scan_config_dir(ifcfg_dir_path) {
+            Some(result) => result.eq(
+                    &vec!("tests/unit_test_data/ifcfgs/ifcfg-eth0", "tests/unit_test_data/ifcfgs/ifcfg-eth1")
+                ),
+            _ => false
+        };
+
+        assert!(test_result);
     }
 
-    // TODO: parsing of ifcfg file
     #[test]
     fn parse_ifcfg_configuration() {
-        // test ifcfg parser
+        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:3F").unwrap();
+        let ifcfg_config_path = Path::new(TEST_CONFIG_DIR).join("ifcfg-eth0");
+
+        let test_result = match parse_config_file(&ifcfg_config_path, &mac_address) {
+            Ok(Some(result)) => result.eq("correct_if_name"),
+            _ => false
+        };
+
+        assert!(test_result);
     }
 
-    // TODO: logger
+    #[test]
+    #[should_panic]
+    fn not_parse_ifcfg_configuration() {
+        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:4F").unwrap();
+        let ifcfg_config_path = Path::new(TEST_CONFIG_DIR).join("ifcfg-eth1");
+
+        let test_result = match parse_config_file(&ifcfg_config_path, &mac_address) {
+            Ok(Some(result)) => result.eq("im_not_here"),
+            _ => false
+        };
+
+        assert!(test_result);
+    }
 }
