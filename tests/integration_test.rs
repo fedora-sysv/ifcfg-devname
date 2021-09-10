@@ -41,14 +41,16 @@ struct DatasetOutput {
 
 #[test]
 fn integration_test() -> Result<(), Box<dyn std::error::Error>> {
-    /* Loop through datasets in directory ./data */
     let data_dir = Path::new("./tests/data");
+
+    /* Loop through datasets in directory ./data */
     for entry in fs::read_dir(data_dir)? {
-        let mut cmd = Command::cargo_bin("ifcfg_devname")?;
         let path = entry?.path();
 
         /* For each dataset; load configuration and run ifcfg_devname binary */
         if path.is_dir() {
+            let mut cmd = Command::cargo_bin("ifcfg_devname")?;
+            
             let config_path = path.join("about.json");
             let cmdline_path = path.join("cmdline");
             let ifcfgs_dir_path = path.join("ifcfgs");
