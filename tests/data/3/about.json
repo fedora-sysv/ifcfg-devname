@@ -1,0 +1,13 @@
+{
+    "name": "[dataset 3] - missing configuration (cmdline) - should FAIL",
+    "description": "",
+
+    "input": {
+        "interface": "dataset_3_if",
+        "hw_address": "AA:BB:CC:DD:EE:F3"
+    },
+    "output": {
+        "should_fail": true,
+        "expected_name": "dataset_3" 
+    }
+}
