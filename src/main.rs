@@ -92,9 +92,9 @@ fn main() -> Result<()> {
     
     /* Check for alternative path to kernel cmdline */
     let kernel_cmdline = if args[1].is_empty() {
-        KERNEL_CMDLINE
+        Path::new(KERNEL_CMDLINE)
     } else {
-        &args[1]
+        Path::new(&args[1])
     };
 
 
@@ -195,7 +195,7 @@ fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
 
 /* Scan kernel cmdline and look for given hardware address and return new device name */
 #[allow(unused)]
-fn parse_kernel_cmdline(mac_address: &MacAddress, kernel_cmdline_path: &str) -> Result<Option<String>> {
+fn parse_kernel_cmdline(mac_address: &MacAddress, kernel_cmdline_path: &Path) -> Result<Option<String>> {
     let file = File::open(kernel_cmdline_path).unwrap();
     let mut reader = BufReader::new(file);
     let mut hwaddr: Option<MacAddress> = None;
@@ -351,32 +351,51 @@ mod should {
     use super::*;
     use std::str::FromStr;
 
-    const TEST_CONFIG_DIR: &str = "./tests/ifcfgs";
-    const TEST_KERNEL_CMDLINE_DIR: &str = "./tests/cmdlines";
+    const TEST_CONFIG_DIR: &str = "./tests/unit_test_data/ifcfgs";
+    const TEST_KERNEL_CMDLINE_DIR: &str = "./tests/unit_test_data/cmdlines";
     
-    // TODO: parsing of kernel cmdline
-    // #[test]
-    // fn parse_kernel_cmdline() {
-    //     let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:FF").unwrap();
-    //     let device_config_name = match parse_kernel_cmdline(&mac_address, "./tests/cmdlines/cmdline") {
-    //         Ok(Some(name)) => name,
-    //         _ => {
-    //             String::from("")
-    //         }
-    //     };
+    
+    // --- Kernel cmdline parser - Unit tests --- //
+    #[test]
+    fn parse_cmdline() {
+        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:1F").unwrap();
+        let kernel_cmdline_path = Path::new(TEST_KERNEL_CMDLINE_DIR).join("1_should_pass");
 
-    //     assert_eq!("test", device_config_name);
-    // }
+        let device_config_name = match parse_kernel_cmdline(&mac_address, &kernel_cmdline_path) {
+            Ok(Some(name)) => name,
+            _ => {
+                String::from("")
+            }
+        };
+
+        assert_eq!("unit_test_1", device_config_name);
+    }
+
+    #[test]
+    #[should_panic]
+    fn not_parse_cmdline() {
+        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:2F").unwrap();
+        let kernel_cmdline_path = Path::new(TEST_KERNEL_CMDLINE_DIR).join("2_should_fail");
+
+        let device_config_name = match parse_kernel_cmdline(&mac_address, &kernel_cmdline_path) {
+            Ok(Some(name)) => name,
+            _ => {
+                String::from("")
+            }
+        };
+
+        assert_eq!("unit_test_2", device_config_name);
+    }
 
     // TODO: scan of config dir
     #[test]
-    fn scan_config_dir() {
+    fn scan_ifcfg_dir() {
         // scan test ifcfg dir
     }
 
     // TODO: parsing of ifcfg file
     #[test]
-    fn parse_ifcfg_files() {
+    fn parse_ifcfg_configuration() {
         // test ifcfg parser
     }
 

@@ -41,7 +41,7 @@ struct DatasetOutput {
 
 #[test]
 fn integration_test() -> Result<(), Box<dyn std::error::Error>> {
-    let data_dir = Path::new("./tests/data");
+    let data_dir = Path::new("./tests/integration_test_data");
 
     /* Loop through datasets in directory ./data */
     for entry in fs::read_dir(data_dir)? {
