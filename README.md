@@ -1,4 +1,4 @@
-# About
+# About | [![Coverage Status](https://coveralls.io/repos/github/jamacku/rename-rusty-device/badge.svg)](https://coveralls.io/github/jamacku/rename-rusty-device)
 
 Initscripts rename_device binary rewritten using rust and renamed to ``ifcfg_devname``.
 
