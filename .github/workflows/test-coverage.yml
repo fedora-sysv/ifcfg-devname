@@ -8,20 +8,17 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
 
-    - name: Checkout
-      uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
 
-    - name: Build ifcfg-devname
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-      uses: actions-rs/cargo@v1
-      with:
-        command: build
-        args: --release --all-features
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --all-features
 
-    - name: Coveralls
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
