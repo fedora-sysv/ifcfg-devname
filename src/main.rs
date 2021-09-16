@@ -62,14 +62,12 @@ fn main() -> Result<()> {
     log::set_boxed_logger(Box::new(BasicLogger::new(logger)))
         .map(|()| log::set_max_level(LevelFilter::Info))?;
 
-    debug!("Connected to syslog");
-
 
     /* Read env variable INTERFACE in order to get names of if */
     let kernel_if_name = match env::var_os(ENV).unwrap().into_string() {
         Ok(val) => val,
         Err(err) => {
-            error!("Error while processing ENV INTERFACE - {}", err.to_string_lossy());
+            error!("Error obtaining ENV {} - {}", ENV,err.to_string_lossy());
             std::process::exit(1)
         }
     };
@@ -158,7 +156,7 @@ fn main() -> Result<()> {
         println!("{}", device_config_name);
         Ok(())
     } else {
-        warn!("Device name or MAC address weren't found in ifcfg files.");
+        error!("Device name or MAC address weren't found in ifcfg files.");
         std::process::exit(1);
     }
 }
@@ -417,7 +415,7 @@ mod should {
     }
 
     #[test]
-    #[should_panic]
+    //#[should_panic]
     fn not_parse_ifcfg_configuration() {
         let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:4F").unwrap();
         let ifcfg_config_path = Path::new(TEST_CONFIG_DIR).join("ifcfg-eth1");
