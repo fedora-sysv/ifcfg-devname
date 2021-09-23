@@ -194,7 +194,7 @@ fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
 /* Scan kernel cmdline and look for given hardware address and return new device name */
 #[allow(unused)]
 fn parse_kernel_cmdline(mac_address: &MacAddress, kernel_cmdline_path: &Path) -> Result<Option<String>> {
-    let file = File::open(kernel_cmdline_path).unwrap();
+    let file = File::open(kernel_cmdline_path)?;
     let mut reader = BufReader::new(file);
     let mut hwaddr: Option<MacAddress> = None;
     let mut device: Option<String> = None;
