@@ -67,7 +67,7 @@ fn main() -> Result<()> {
     let kernel_if_name = match env::var_os(ENV).unwrap().into_string() {
         Ok(val) => val,
         Err(err) => {
-            error!("Error obtaining ENV {} - {}", ENV,err.to_string_lossy());
+            error!("Fail obtaining ENV {} - {}", ENV, err.to_string_lossy());
             std::process::exit(1)
         }
     };
@@ -79,7 +79,7 @@ fn main() -> Result<()> {
         match mac_address_by_name(&kernel_if_name) {
             Ok(Some(val)) => val,
             _ => {
-                error!("Error while getting MAC address of given network interface ({})", kernel_if_name);
+                error!("Fail to resolve MAC address of '{}'", kernel_if_name);
                 std::process::exit(1)
             }
         }
@@ -102,8 +102,8 @@ fn main() -> Result<()> {
      */
     let mut device_config_name = match parse_kernel_cmdline(&mac_address, kernel_cmdline) {
         Ok(Some(name)) => {
-            if check_new_devname(name.clone()).is_some() {
-                warn!("Warning!! Please, do NOT use kernel like devnames (eth0, etc.) as new names for your network interface devices! Used name: '{}'", name);
+            if is_like_kernel_name(name.clone()).is_some() {
+                warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
             }
             name
         },
@@ -128,7 +128,7 @@ fn main() -> Result<()> {
         let list_of_ifcfg_paths = match scan_config_dir(config_dir_path) {
             Some(val) => val,
             None => {
-                error!("Error while getting list of ifcfg files from directory {}", config_dir);
+                error!("Fail to get list of ifcfg files from directory {}", config_dir);
                 std::process::exit(1)
             }
         };
@@ -140,8 +140,8 @@ fn main() -> Result<()> {
 
             match parse_config_file(config_file_path, &mac_address) {
                 Ok(Some(name)) => {
-                    if check_new_devname(name.clone()).is_some() {
-                        warn!("Warning!! Please, do NOT use kernel like devnames (eth0, etc.) as new names for your network interface devices! Used name: '{}'", name);
+                    if is_like_kernel_name(name.clone()).is_some() {
+                        warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
                     }
                     device_config_name = format!("{}", name);
                     break 'config_loop;
@@ -322,7 +322,7 @@ fn parse_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Opt
 
 /* Check if new devname is equal to kernel standard devname (eth0, etc.)
  * If such a name is detected return Some(()) else None */
-fn check_new_devname(new_devname: String) -> Option<()> {
+fn is_like_kernel_name(new_devname: String) -> Option<()> {
     lazy_static! {
         /* Check if new devname is equal to kernel standard devname (eth0, etc.)
          * regex: ^eth\d+$
