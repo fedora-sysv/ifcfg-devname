@@ -1,4 +1,4 @@
-# About | [![codecov](https://codecov.io/gh/jamacku/rename-rusty-device/branch/main/graph/badge.svg?token=4R3FR4RVH4)](https://codecov.io/gh/jamacku/rename-rusty-device)
+# About | [![codecov](https://codecov.io/gh/jamacku/ifcfg-devname/branch/main/graph/badge.svg?token=4R3FR4RVH4)](https://codecov.io/gh/jamacku/ifcfg-devname)
 
 Initscripts rename_device binary rewritten using rust and renamed to ``ifcfg-devname``.
 
