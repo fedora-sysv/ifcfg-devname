@@ -53,11 +53,11 @@ fn main() -> Result<()> {
     let formatter = Formatter3164 {
         facility: Facility::LOG_USER,
         hostname: None,
-        process: "ifcfg_devname".into(),
+        process: "ifcfg-devname".into(),
         pid: 0,
     };
 
-    let logger = syslog::unix(formatter).expect("[ifcfg_devname]: could not connect to syslog");
+    let logger = syslog::unix(formatter).expect("[ifcfg-devname]: could not connect to syslog");
     /* This is a simple convenience wrapper over set_logger */
     log::set_boxed_logger(Box::new(BasicLogger::new(logger)))
         .map(|()| log::set_max_level(LevelFilter::Info))?;

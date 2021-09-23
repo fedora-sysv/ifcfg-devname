@@ -1,5 +1,5 @@
 [package]
-name = "ifcfg_devname"
+name = "ifcfg-devname"
 version = "0.1.0"
 authors = ["Jan Macku <jamacku@redhat.com>"]
 edition = "2018"

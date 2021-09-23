@@ -47,9 +47,9 @@ fn integration_test() -> Result<(), Box<dyn std::error::Error>> {
     for entry in fs::read_dir(data_dir)? {
         let path = entry?.path();
 
-        /* For each dataset; load configuration and run ifcfg_devname binary */
+        /* For each dataset; load configuration and run ifcfg-devname binary */
         if path.is_dir() {
-            let mut cmd = Command::cargo_bin("ifcfg_devname")?;
+            let mut cmd = Command::cargo_bin("ifcfg-devname")?;
             
             let config_path = path.join("about.json");
             let cmdline_path = path.join("cmdline");
@@ -60,7 +60,7 @@ fn integration_test() -> Result<(), Box<dyn std::error::Error>> {
                 &fs::read_to_string(config_path)?
             )?;
 
-            /* Run ifcfg_devname with parameters from given dataset */
+            /* Run ifcfg-devname with parameters from given dataset */
             let dataset_assert = cmd
                 .env("INTERFACE", dataset_configuration.input.interface)
                 .args(&[
