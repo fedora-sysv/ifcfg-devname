@@ -1,4 +1,4 @@
-# About | [![Coverage Status](https://coveralls.io/repos/github/jamacku/rename-rusty-device/badge.svg)](https://coveralls.io/github/jamacku/rename-rusty-device)
+# About | [![codecov](https://codecov.io/gh/jamacku/rename-rusty-device/branch/main/graph/badge.svg?token=4R3FR4RVH4)](https://codecov.io/gh/jamacku/rename-rusty-device)
 
 Initscripts rename_device binary rewritten using rust and renamed to ``ifcfg_devname``.
 
