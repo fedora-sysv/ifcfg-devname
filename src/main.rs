@@ -415,13 +415,13 @@ mod should {
     }
 
     #[test]
-    //#[should_panic]
+    #[should_panic]
     fn not_parse_ifcfg_configuration() {
         let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:4F").unwrap();
         let ifcfg_config_path = Path::new(TEST_CONFIG_DIR).join("ifcfg-eth1");
 
         let test_result = match parse_config_file(&ifcfg_config_path, &mac_address) {
-            Ok(Some(result)) => result.eq("im_not_here"),
+            Ok(Some(_)) => true,
             _ => false
         };
 
