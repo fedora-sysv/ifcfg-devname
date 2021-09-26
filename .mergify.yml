@@ -1,4 +1,38 @@
 pull_request_rules:
+  - name: Source label
+    conditions:
+      - files~=^src/ # is true if any files in the tests directory is modified
+    actions:
+      label:
+        add:
+          - 📜 source
+
+  # remove source label
+  - name: Source label - romove
+    conditions:
+      - -files~=^src/
+    actions:
+      label:
+        remove:
+          - 📜 source
+
+  - name: Test label
+    conditions:
+      - files~=^tests/ # is true if any files in the tests directory is modified
+    actions:
+      label:
+        add:
+          - 🧪 tests
+
+  # remove test label
+  - name: Test label - romove
+    conditions:
+      - -files~=^test/
+    actions:
+      label:
+        remove:
+          - 🧪 tests
+
   - name: Automatic merge on approval
     conditions:
       - "#approved-reviews-by>=1"
