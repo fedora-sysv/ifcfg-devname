@@ -5,7 +5,7 @@ pull_request_rules:
     actions:
       label:
         add:
-          - 📜 source
+          - source
 
   # remove source label
   - name: Source label - romove
@@ -14,7 +14,7 @@ pull_request_rules:
     actions:
       label:
         remove:
-          - 📜 source
+          - source
 
   - name: Test label
     conditions:
@@ -22,7 +22,7 @@ pull_request_rules:
     actions:
       label:
         add:
-          - 🧪 tests
+          - tests
 
   # remove test label
   - name: Test label - romove
@@ -31,7 +31,47 @@ pull_request_rules:
     actions:
       label:
         remove:
-          - 🧪 tests
+          - tests
+          
+  - name: Configuration label
+    conditions:
+      - or:
+        - files~=\.yml$
+        - files~=\.toml$
+        - files~=\.json$
+    actions:
+      label:
+        add:
+          - configuration
+
+  # remove configuration label
+  - name: Configuration label - romove
+    conditions:
+      - and:
+        - -files~=\.yml$
+        - -files~=\.toml$
+        - -files~=\.json$
+    actions:
+      label:
+        remove:
+          - configuration
+          
+  - name: Documentation label
+    conditions:
+      - files~=\.md$
+    actions:
+      label:
+        add:
+          - documentation
+
+  # remove documentation label
+  - name: Documentation label - romove
+    conditions:
+      - -files~=\.md$
+    actions:
+      label:
+        remove:
+          - documentation
 
   - name: Automatic merge on approval
     conditions:
