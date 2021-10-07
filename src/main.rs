@@ -57,17 +57,27 @@ fn main() -> Result<()> {
         pid: 0,
     };
 
-    let logger = syslog::unix(formatter).expect("[ifcfg-devname]: could not connect to syslog");
-    /* This is a simple convenience wrapper over set_logger */
-    log::set_boxed_logger(Box::new(BasicLogger::new(logger)))
-        .map(|()| log::set_max_level(LevelFilter::Info))?;
+    let is_logger_available = syslog::unix(formatter.clone()).is_ok();
+    let logger: syslog::Logger<syslog::LoggerBackend, syslog::Formatter3164>;
+
+    if is_logger_available {
+        /* Connect to syslog */
+        logger = syslog::unix(formatter)?;
+        /* This is a simple convenience wrapper over set_logger */
+        log::set_boxed_logger(Box::new(BasicLogger::new(logger)))
+            .map(|()| log::set_max_level(LevelFilter::Info))?;
+    };
 
 
     /* Read env variable INTERFACE in order to get names of if */
     let kernel_if_name = match env::var_os(ENV).unwrap().into_string() {
         Ok(val) => val,
         Err(err) => {
-            error!("Fail obtaining ENV {} - {}", ENV, err.to_string_lossy());
+            if is_logger_available {
+                error!("Fail obtaining ENV {} - {}", ENV, err.to_string_lossy());
+            } else {
+                eprintln!("Fail obtaining ENV {} - {}", ENV, err.to_string_lossy());
+            }
             std::process::exit(1)
         }
     };
@@ -79,7 +89,11 @@ fn main() -> Result<()> {
         match mac_address_by_name(&kernel_if_name) {
             Ok(Some(val)) => val,
             _ => {
-                error!("Fail to resolve MAC address of '{}'", kernel_if_name);
+                if is_logger_available {
+                    error!("Fail to resolve MAC address of '{}'", kernel_if_name);
+                } else {
+                    eprintln!("Fail to resolve MAC address of '{}'", kernel_if_name);
+                }
                 std::process::exit(1)
             }
         }
@@ -103,12 +117,18 @@ fn main() -> Result<()> {
     let mut device_config_name = match parse_kernel_cmdline(&mac_address, kernel_cmdline) {
         Ok(Some(name)) => {
             if is_like_kernel_name(name.clone()).is_some() {
-                warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
+                if is_logger_available {
+                    warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
+                } else {
+                    eprintln!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
+                }
             }
             name
         },
         _ => {
-            debug!("New device name for '{}' wasn't found at kernel cmdline", kernel_if_name);
+            if is_logger_available {
+                debug!("New device name for '{}' wasn't found at kernel cmdline", kernel_if_name);
+            }
             String::from("")
         }
     };
@@ -128,7 +148,11 @@ fn main() -> Result<()> {
         let list_of_ifcfg_paths = match scan_config_dir(config_dir_path) {
             Some(val) => val,
             None => {
-                error!("Fail to get list of ifcfg files from directory {}", config_dir);
+                if is_logger_available {
+                    error!("Fail to get list of ifcfg files from directory {}", config_dir);
+                } else {
+                    eprintln!("Fail to get list of ifcfg files from directory {}", config_dir);
+                }
                 std::process::exit(1)
             }
         };
@@ -141,7 +165,11 @@ fn main() -> Result<()> {
             match parse_config_file(config_file_path, &mac_address) {
                 Ok(Some(name)) => {
                     if is_like_kernel_name(name.clone()).is_some() {
-                        warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
+                        if is_logger_available {
+                            warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
+                        } else {
+                            eprintln!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
+                        }
                     }
                     device_config_name = format!("{}", name);
                     break 'config_loop;
@@ -156,7 +184,11 @@ fn main() -> Result<()> {
         println!("{}", device_config_name);
         Ok(())
     } else {
-        error!("Device name or MAC address weren't found in ifcfg files.");
+        if is_logger_available {
+            error!("Device name or MAC address weren't found in ifcfg files.");
+        } else {
+            eprintln!("Device name or MAC address weren't found in ifcfg files.");
+        }
         std::process::exit(1);
     }
 }
