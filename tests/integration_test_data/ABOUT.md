@@ -11,3 +11,4 @@ Integration tests of ``ifcfg-devname`` uses multiple datasets to ensure correct 
 * [[``4``](./4/)] - Missing ifcfg configuration for new device name - should [``FAIL``]
 * [[``5``](./5/)] - Missing kernel cmdline and ifcfg configuration files - should [``FAIL``]
 * [[``6``](./6/)] - Whitespaces in ifcfg files - should [``PASS``]
+* [[``7``](./7/)] - Comments (``#``) in ifcfg files - should [``FAIL``]
