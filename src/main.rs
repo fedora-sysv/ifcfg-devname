@@ -47,7 +47,7 @@ const KERNEL_CMDLINE: &str = "/proc/cmdline";
 fn main() -> Result<()> {
     /* Store any commandline arguments */
     let args: Vec<String> = env::args().collect();
-
+    let is_correct_number_args = args.len() > 3;
 
     /* Setup syslog logger */ 
     let formatter = Formatter3164 {
@@ -74,7 +74,7 @@ fn main() -> Result<()> {
 
     
     /* Check for testing hw address passed via arg */
-    let mac_address = if args[3].is_empty() {
+    let mac_address = if !is_correct_number_args {
         /* Get MAC address of given interface */
         match mac_address_by_name(&kernel_if_name) {
             Ok(Some(val)) => val,
@@ -89,7 +89,7 @@ fn main() -> Result<()> {
 
     
     /* Check for alternative path to kernel cmdline */
-    let kernel_cmdline = if args[1].is_empty() {
+    let kernel_cmdline = if !is_correct_number_args {
         Path::new(KERNEL_CMDLINE)
     } else {
         Path::new(&args[1])
@@ -117,7 +117,7 @@ fn main() -> Result<()> {
     /* When device was not found at kernel cmdline look into ifcfg files */
     if device_config_name.is_empty() {
         /* Check for alternative path to config dir */
-        let config_dir = if args[2].is_empty() {
+        let config_dir = if !is_correct_number_args {
             CONFIG_DIR
         } else {
             &args[2]
