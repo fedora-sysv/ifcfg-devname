@@ -234,14 +234,14 @@ fn parse_kernel_cmdline(mac_address: &MacAddress, kernel_cmdline_path: &Path) ->
 
     lazy_static! {
         /* Look for patterns like this ifname=new_name:aa:BB:CC:DD:ee:ff at kernel command line
-         * regex: ifname=(\S[^:]{1,15}):(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))
+         * regex: ifname=(\S[^:]{0,14}):(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))
          * ifname=(group1):(group2) - look for pattern starting with `ifname=` following with two groups separated with `:` character
-         * group1: (\S[^:]{1,15}) - match non-whitespace characters ; minimum 1 and maximum 15 ; do not match `:` character
+         * group1: (\S[^:]{0,14}) - match non-whitespace characters ; minimum 1 and maximum 15 ; do not match `:` character
          * group2: (([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})) - match 48-bit hw address expressed in hexadecimal system ; each of inner 8-bits are separated with `:` character ; case insensitive
          * example: ifname=new-devname007:00:1b:44:11:3A:B7
          *                 ^^^^^^^^^^^^^^ ~~~~~~~~~~~~~~~~~
          *                 new dev name   hw address of if */
-        static ref REGEX_DEVICE_HWADDR_PAIR: Regex = Regex::new(r"ifname=(\S[^:]{1,15}):(([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}))").unwrap();
+        static ref REGEX_DEVICE_HWADDR_PAIR: Regex = Regex::new(r"ifname=(\S[^:]{0,14}):(([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}))").unwrap();
     }
 
     /* Read kernel command line and look for ifname= */
@@ -291,22 +291,22 @@ fn parse_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Opt
 
     lazy_static! {
         /* Look for line that starts with DEVICE= and then store everything else in group
-         * regex: ^DEVICE=(\S[^:]{1,15})
-         * ^DEVICE=(group1) - look for line starting with `DEVICE=` following with group of characters describing new device name
-         * group1: (\S[^:]{1,15}) - match non-whitespace characters ; minimum 1 and maximum 15 ; do not match `:` character
+         * regex: ^\s*DEVICE=(\S[^:]{0,14})
+         * ^\s*DEVICE=(group1) - look for line starting with `DEVICE=` (ignore whitespaces) following with group of characters describing new device name
+         * group1: (\S[^:]{0,14}) - match non-whitespace characters ; minimum 1 and maximum 15 ; do not match `:` character
          * example: DEVICE=new-devname007
          *                 ^^^^^^^^^^^^^^
          *                 new dev name */
-        static ref REGEX_DEVICE: Regex = Regex::new(r"^DEVICE=(\S[^:]{1,15})").unwrap();
+        static ref REGEX_DEVICE: Regex = Regex::new(r"^\s*DEVICE=(\S[^:]{0,14})").unwrap();
 
         /* Look for line with mac address and store its value in group for later
-         * regex: ^HWADDR=(([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}))
-         * ^HWADDR=(group1) - look for line starting with `HWADDR=` following with group of characters describing hw address of device
+         * regex: ^\s*HWADDR=(([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}))
+         * ^\s*HWADDR=(group1) - look for line starting with `HWADDR=` (ignore whitespaces) following with group of characters describing hw address of device
          * group1: (([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})) - match 48-bit hw address expressed in hexadecimal system ; each of inner 8-bits are separated with `:` character ; case insensitive
          * example: HWADDR=00:1b:44:11:3A:B7
          *                 ^^^^^^^^^^^^^^^^^
          *                 hw address of if */
-        static ref REGEX_HWADDR: Regex = Regex::new(r"^HWADDR=(([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}))").unwrap();
+        static ref REGEX_HWADDR: Regex = Regex::new(r"^\s*HWADDR=(([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}))").unwrap();
     }
 
     /* Read lines of given file and look for DEVICE= and HWADDR= */
