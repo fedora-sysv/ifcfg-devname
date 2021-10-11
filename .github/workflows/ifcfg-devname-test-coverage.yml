@@ -7,20 +7,19 @@ on:
       - main
 
 name: Build and Test Coverage
+env:
+  PROJECT_NAME_UNDERSCORE: ifcfg_devname
+  CARGO_INCREMENTAL: 0
+  RUSTFLAGS: -Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort
+  RUSTDOCFLAGS: -Cpanic=abort
+  CACHE_NAME: cache-dependencies
 
 jobs:
   build:
     name: Build
-    env:
-      PROJECT_NAME_UNDERSCORE: ifcfg_devname
-      CARGO_INCREMENTAL: 0
-      RUSTFLAGS: -Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort
-      RUSTDOCFLAGS: -Cpanic=abort
-      CACHE_NAME: cache-dependencies
-
     runs-on: ubuntu-latest
+    
     steps:
-
       - uses: actions/checkout@v2
 
       - uses: actions-rs/toolchain@v1
@@ -51,7 +50,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - uses: actions/checkout@v2
 
       - uses: actions-rs/toolchain@v1
