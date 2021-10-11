@@ -30,7 +30,7 @@ jobs:
           override: true
 
       - name: Compile ifcfg-devname
-      - run: cargo build
+        run: cargo build
 
       # improve performace of workflow
       - name: Cache dependencies
@@ -47,9 +47,9 @@ jobs:
 
   test-coverage:
     name: Test coverage
-    runs-on: ubuntu-latest
     needs: build
-    
+    runs-on: ubuntu-latest
+
     steps:
 
       - uses: actions/checkout@v2
