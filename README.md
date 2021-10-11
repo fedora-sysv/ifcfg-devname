@@ -1,4 +1,4 @@
-# About | [![codecov](https://codecov.io/gh/jamacku/ifcfg-devname/branch/main/graph/badge.svg?token=4R3FR4RVH4)](https://codecov.io/gh/jamacku/ifcfg-devname) [![Mergify Status][mergify-status]][mergify]
+# About | [![Build and Test Coverage](https://github.com/jamacku/ifcfg-devname/actions/workflows/ifcfg-devname-test-coverage.yml/badge.svg)](https://github.com/jamacku/ifcfg-devname/actions/workflows/ifcfg-devname-test-coverage.yml) [![codecov](https://codecov.io/gh/jamacku/ifcfg-devname/branch/main/graph/badge.svg?token=4R3FR4RVH4)](https://codecov.io/gh/jamacku/ifcfg-devname) [![Mergify Status][mergify-status]][mergify]
 
 [mergify]: https://mergify.io
 [mergify-status]: https://img.shields.io/endpoint.svg?url=https://dashboard.mergify.io/badges/jamacku/ifcfg-devname&style=flat
