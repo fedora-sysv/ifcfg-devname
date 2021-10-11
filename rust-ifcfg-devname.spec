@@ -1,39 +1,29 @@
 %bcond_without check
 %global __cargo_skip_build 0
 
-%global crate ifcfg-devname
+%global name ifcfg-devname
 
-Name:           rust-%{crate}
+Name:           %{name}
 Version:        0.1.0
 Release:        1%{?dist}
 Summary:        # FIXME
 
-# Upstream license specification: None
-License:        # FIXME
+License:        GPLv2
 
-URL:            https://crates.io/crates/ifcfg-devname
-Source:         %{crates_source}
+URL:            https://github.com/jamacku/%{name}
+Source:         https://github.com/jamacku/%{name}/archive/%{version}.tar.gz#/%{name}-%{version}.tar.gz
 
 ExclusiveArch:  %{rust_arches}
 
+BuildRequires:  rust-toolset
 BuildRequires:  rust-packaging
+BuildRequires:  git
 
-%global _description %{expand:
-%{summary}.}
-
-%description %{_description}
-
-%package     -n %{crate}
-Summary:        %{summary}
-
-%description -n %{crate} %{_description}
-
-%files       -n %{crate}
-%doc README.md
-%{_bindir}/ifcfg-devname
+%description
+# FIXME
 
 %prep
-%autosetup -n %{crate}-%{version_no_tilde} -p1
+%autosetup -n %{name}-%{version_no_tilde} -p1
 %cargo_prep
 
 %generate_buildrequires
@@ -42,12 +32,15 @@ Summary:        %{summary}
 %build
 %cargo_build -a
 
+%check
+%cargo_test -a
+
 %install
 %cargo_install -a
 
-%if %{with check}
-%check
-%cargo_test -a
-%endif
+%files
+# FIXME
 
 %changelog
+* Mon Oct 11 2021 Jan Macku <jamacku@redhat.com> - 0.1.0-1
+- Init of ifcfg-devname package
