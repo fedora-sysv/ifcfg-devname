@@ -75,6 +75,8 @@ fn main() -> Result<()> {
     } else {
         MacAddress::from_str(&args[3])?
     };
+    /* convert mac_address to lowercase string */
+    let simple_mac_address = mac_address.to_string().to_lowercase();
 
     
     /* Check for alternative path to kernel cmdline */
@@ -89,7 +91,7 @@ fn main() -> Result<()> {
      * as they are documented in dracut.cmdline(7)
      * Example: ifname=test:aa:bb:cc:dd:ee:ff
      */
-    let mut device_config_name = match parse_kernel_cmdline(&mac_address, kernel_cmdline) {
+    let mut device_config_name = match parse_kernel_cmdline(&simple_mac_address, kernel_cmdline) {
         Ok(Some(name)) => {
             if is_like_kernel_name(&name) {
                 warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
@@ -127,7 +129,7 @@ fn main() -> Result<()> {
         for path in ifcfg_paths {
             let config_file_path: &Path = Path::new(&path);
 
-            match parse_config_file(config_file_path, &mac_address) {
+            match parse_config_file(config_file_path, &simple_mac_address) {
                 Ok(Some(name)) => {
                     if is_like_kernel_name(&name) {
                         warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
@@ -182,7 +184,7 @@ fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
 
 /* Scan kernel cmdline and look for given hardware address and return new device name */
 #[allow(unused)]
-fn parse_kernel_cmdline(mac_address: &MacAddress, kernel_cmdline_path: &Path) -> Result<Option<String>> {
+fn parse_kernel_cmdline(mac_address: &str, kernel_cmdline_path: &Path) -> Result<Option<String>> {
     let file = File::open(kernel_cmdline_path)?;
     let mut reader = BufReader::new(file);
     let mut hwaddr: Option<MacAddress> = None;
@@ -211,22 +213,13 @@ fn parse_kernel_cmdline(mac_address: &MacAddress, kernel_cmdline_path: &Path) ->
             hwaddr = Some(capture[2].parse()?);
                 
             /* Check MAC */
-            if hwaddr.is_some() {
-                if hwaddr
-                    .unwrap()
-                    .to_string()
-                    .to_owned()
-                    .to_lowercase()
-                    .eq(
-                        &mac_address
-                            .to_string()
-                            .to_owned()
-                            .to_lowercase()
-                ) {
-                    break;
-                } else {
-                    device = None;
-                }
+            if hwaddr
+                .unwrap()
+                .to_string()
+                .to_owned()
+                .to_lowercase()
+                .eq(mac_address) {
+                break;
             } else {
                 device = None;
             }
@@ -241,7 +234,7 @@ fn parse_kernel_cmdline(mac_address: &MacAddress, kernel_cmdline_path: &Path) ->
 }
 
 /* Scan ifcfg files and look for given HWADDR and return DEVICE name */
-fn parse_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Option<String>> {
+fn parse_config_file(config_file: &Path, mac_address: &str) -> Result<Option<String>> {
     let file = File::open(config_file)?;
     let reader = BufReader::new(file);
     let mut hwaddr: Option<MacAddress> = None;
@@ -286,29 +279,15 @@ fn parse_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Opt
         }
     }
 
-    // TODO: .to_string() at begining and also hwaddr.is_some() alone
+    // TODO: Return Ok() + Err()
     if hwaddr.is_some() {
-        if hwaddr
-            .unwrap()
-            .to_string()
-            .to_owned()
-            .to_lowercase()
-            .ne(
-                &mac_address
-                    .to_string()
-                    .to_owned()
-                    .to_lowercase()
-        ) {
-            device = None;
+        if hwaddr.unwrap().to_string().to_lowercase().ne(mac_address) {
+            Ok(None)
+        } else {
+            Ok(device)
         }
     } else {
-        device = None;
-    }
-
-    /* When MAC doesn't match it returns OK(None) */
-    // TODO: Return Ok() + Err()
-    match device {
-        dev => Ok(dev)
+        Ok(None)
     }
 }
 
@@ -368,7 +347,7 @@ mod should {
     // --- Kernel cmdline parser - Unit tests --- //
     #[test]
     fn parse_cmdline() {
-        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:1F").unwrap();
+        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:1F").unwrap().to_string().to_lowercase();
         let kernel_cmdline_path = Path::new(TEST_KERNEL_CMDLINE_DIR).join("1_should_pass");
 
         let device_config_name = match parse_kernel_cmdline(&mac_address, &kernel_cmdline_path) {
@@ -384,7 +363,7 @@ mod should {
     #[test]
     #[should_panic]
     fn not_parse_cmdline() {
-        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:2F").unwrap();
+        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:2F").unwrap().to_string().to_lowercase();
         let kernel_cmdline_path = Path::new(TEST_KERNEL_CMDLINE_DIR).join("2_should_fail");
 
         let device_config_name = match parse_kernel_cmdline(&mac_address, &kernel_cmdline_path) {
@@ -415,7 +394,7 @@ mod should {
 
     #[test]
     fn parse_ifcfg_configuration() {
-        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:3F").unwrap();
+        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:3F").unwrap().to_string().to_lowercase();
         let ifcfg_config_path = Path::new(TEST_CONFIG_DIR).join("ifcfg-eth0");
 
         let test_result = match parse_config_file(&ifcfg_config_path, &mac_address) {
@@ -429,7 +408,7 @@ mod should {
     #[test]
     #[should_panic]
     fn not_parse_ifcfg_configuration() {
-        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:4F").unwrap();
+        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:4F").unwrap().to_string().to_lowercase();
         let ifcfg_config_path = Path::new(TEST_CONFIG_DIR).join("ifcfg-eth1");
 
         let test_result = match parse_config_file(&ifcfg_config_path, &mac_address) {
