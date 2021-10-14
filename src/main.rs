@@ -228,7 +228,7 @@ fn parse_kernel_cmdline(mac_address: &str, kernel_cmdline_path: &Path) -> Result
 
     /* When MAC doesn't match it returns OK(None) */
     match device {
-        Some(dev) => Ok(Some(dev)),
+        Some(_) => Ok(device),
         None => Err("new device name not found".into())
     }
 }
