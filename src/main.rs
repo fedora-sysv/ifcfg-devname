@@ -1,7 +1,6 @@
 extern crate syslog;
 #[macro_use]
 extern crate log;
-// use log::*;
 
 use std::env;
 use std::error;
@@ -50,39 +49,14 @@ fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
     let is_correct_number_args = args.len() > 3;
 
-    /* Setup syslog logger */ 
-    let formatter = Formatter3164 {
-        facility: Facility::LOG_USER,
-        hostname: None,
-        process: "ifcfg-devname".into(),
-        pid: 0,
-    };
-
-    let is_logger_available = syslog::unix(formatter.clone()).is_ok();
-    let logger: syslog::Logger<syslog::LoggerBackend, syslog::Formatter3164>;
-
-    // TODO: call of init functions
     // TODO: rename long variable names
-    if is_logger_available {
-        /* Connect to syslog */
-        logger = syslog::unix(formatter)?;
-        /* This is a simple convenience wrapper over set_logger */
-        log::set_boxed_logger(Box::new(BasicLogger::new(logger)))
-            .map(|()| log::set_max_level(LevelFilter::Info))?;
-    } /* else {
-        stderrlog::new().module(module_path!()).init().unwrap();
-    }; */
-
+    logger_init();
 
     /* Read env variable INTERFACE in order to get names of if */
     let kernel_if_name = match env::var_os(ENV).unwrap().into_string() {
         Ok(val) => val,
         Err(err) => {
-            if is_logger_available {
-                error!("Fail obtaining ENV {} - {}", ENV, err.to_string_lossy());
-            } else {
-                eprintln!("Fail obtaining ENV {} - {}", ENV, err.to_string_lossy());
-            }
+            error!("Fail obtaining ENV {} - {}", ENV, err.to_string_lossy());
             std::process::exit(1)
         }
     };
@@ -94,11 +68,7 @@ fn main() -> Result<()> {
         match mac_address_by_name(&kernel_if_name) {
             Ok(Some(val)) => val,
             _ => {
-                if is_logger_available {
-                    error!("Fail to resolve MAC address of '{}'", kernel_if_name);
-                } else {
-                    eprintln!("Fail to resolve MAC address of '{}'", kernel_if_name);
-                }
+                error!("Fail to resolve MAC address of '{}'", kernel_if_name);
                 std::process::exit(1)
             }
         }
@@ -122,18 +92,12 @@ fn main() -> Result<()> {
     let mut device_config_name = match parse_kernel_cmdline(&mac_address, kernel_cmdline) {
         Ok(Some(name)) => {
             if is_like_kernel_name(&name) {
-                if is_logger_available {
-                    warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
-                } else {
-                    eprintln!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
-                }
+                warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
             }
             name
         },
         _ => {
-            if is_logger_available {
-                debug!("New device name for '{}' wasn't found at kernel cmdline", kernel_if_name);
-            }
+            debug!("New device name for '{}' wasn't found at kernel cmdline", kernel_if_name);
             String::from("")
         }
     };
@@ -153,11 +117,7 @@ fn main() -> Result<()> {
         let ifcfg_paths = match scan_config_dir(config_dir_path) {
             Some(val) => val,
             None => {
-                if is_logger_available {
-                    error!("Fail to get list of ifcfg files from directory {}", config_dir);
-                } else {
-                    eprintln!("Fail to get list of ifcfg files from directory {}", config_dir);
-                }
+                error!("Fail to get list of ifcfg files from directory {}", config_dir);
                 std::process::exit(1)
             }
         };
@@ -170,11 +130,7 @@ fn main() -> Result<()> {
             match parse_config_file(config_file_path, &mac_address) {
                 Ok(Some(name)) => {
                     if is_like_kernel_name(&name) {
-                        if is_logger_available {
-                            warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
-                        } else {
-                            eprintln!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
-                        }
+                        warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
                     }
                     device_config_name = format!("{}", name);
                     break;
@@ -189,11 +145,7 @@ fn main() -> Result<()> {
         println!("{}", device_config_name);
         Ok(())
     } else {
-        if is_logger_available {
-            error!("Device name or MAC address weren't found in ifcfg files.");
-        } else {
-            eprintln!("Device name or MAC address weren't found in ifcfg files.");
-        }
+        error!("Device name or MAC address weren't found in ifcfg files.");
         std::process::exit(1);
     }
 }
@@ -378,6 +330,26 @@ fn is_like_kernel_name(new_devname: &str) -> bool {
         true
     } else {
         false
+    }
+}
+
+/* Initialize logging, by default log to syslog, If syslog isn't available log to stderr */
+fn logger_init() {
+    /* Setup syslog logger */ 
+    let formatter = Formatter3164 {
+        facility: Facility::LOG_USER,
+        hostname: None,
+        process: "ifcfg-devname".into(),
+        pid: 0,
+    };
+
+    /* Connect to syslog */
+    if let Ok(logger) = syslog::unix(formatter) {
+        /* This is a simple convenience wrapper over set_logger */
+        log::set_boxed_logger(Box::new(BasicLogger::new(logger)))
+            .map(|()| log::set_max_level(LevelFilter::Info)).unwrap();
+    } else {
+        stderrlog::new().module(module_path!()).init().unwrap();
     }
 }
 
