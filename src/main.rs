@@ -234,7 +234,7 @@ fn parse_kernel_cmdline(mac_address: &MacAddress, kernel_cmdline_path: &Path) ->
     }
 
     /* When MAC doesn't match it returns OK(None) */
-    // TODO: Return Ok()
+    // TODO: Return Ok() + Err()
     match device {
         dev => Ok(dev)
     }
@@ -306,6 +306,7 @@ fn parse_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Opt
     }
 
     /* When MAC doesn't match it returns OK(None) */
+    // TODO: Return Ok() + Err()
     match device {
         dev => Ok(dev)
     }

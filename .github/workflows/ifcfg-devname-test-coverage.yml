@@ -44,8 +44,8 @@ jobs:
             target
           key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ hashFiles('Cargo.lock') }}
 
-  test-coverage:
-    name: Test coverage
+  unit-test-coverage:
+    name: Unit test coverage
     needs: build
     runs-on: ubuntu-latest
 
@@ -71,10 +71,11 @@ jobs:
             target
           key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ hashFiles('Cargo.lock') }}
 
+      # use cargo test --bins to run only unit tests
       - name: Generate test result and coverage report
         run: |
           cargo install cargo2junit grcov;
-          cargo test $CARGO_OPTIONS -- -Z unstable-options --format json | cargo2junit > results.xml;
+          cargo test --bins $CARGO_OPTIONS -- -Z unstable-options --format json | cargo2junit > results.xml;
           zip -0 ccov.zip `find . \( -name "$PROJECT_NAME_UNDERSCORE*.gc*" \) -print`;
           grcov ccov.zip -s . -t lcov --llvm --ignore-not-existing --ignore "/*" --ignore "tests/*" -o lcov.info;
 
@@ -82,4 +83,47 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           files: ./lcov.info
-          fail_ci_if_error: true
+          flags: unit
+          fail_ci_if_error: false
+
+  integration-test-coverage:
+    name: Integration test coverage
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+
+      # improve performace of workflow
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+            ~/.cargo/bin
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            target
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ hashFiles('Cargo.lock') }}
+
+      # run only integration_test
+      - name: unit - Generate test result and coverage report
+        run: |
+          cargo install cargo2junit grcov;
+          cargo test integration_test $CARGO_OPTIONS -- -Z unstable-options --format json | cargo2junit > results.xml;
+          zip -0 ccov.zip `find . \( -name "$PROJECT_NAME_UNDERSCORE*.gc*" \) -print`;
+          grcov ccov.zip -s . -t lcov --llvm --ignore-not-existing --ignore "/*" --ignore "tests/*" -o lcov.info;
+
+      - name: Upload to CodeCov
+        uses: codecov/codecov-action@v1
+        with:
+          files: ./lcov.info
+          flags: integration
+          fail_ci_if_error: false
