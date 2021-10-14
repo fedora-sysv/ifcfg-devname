@@ -1,6 +1,7 @@
 extern crate syslog;
 #[macro_use]
 extern crate log;
+// use log::*;
 
 use std::env;
 use std::error;
@@ -60,13 +61,17 @@ fn main() -> Result<()> {
     let is_logger_available = syslog::unix(formatter.clone()).is_ok();
     let logger: syslog::Logger<syslog::LoggerBackend, syslog::Formatter3164>;
 
+    // TODO: call of init functions
+    // TODO: rename long variable names
     if is_logger_available {
         /* Connect to syslog */
         logger = syslog::unix(formatter)?;
         /* This is a simple convenience wrapper over set_logger */
         log::set_boxed_logger(Box::new(BasicLogger::new(logger)))
             .map(|()| log::set_max_level(LevelFilter::Info))?;
-    };
+    } /* else {
+        stderrlog::new().module(module_path!()).init().unwrap();
+    }; */
 
 
     /* Read env variable INTERFACE in order to get names of if */
@@ -116,7 +121,7 @@ fn main() -> Result<()> {
      */
     let mut device_config_name = match parse_kernel_cmdline(&mac_address, kernel_cmdline) {
         Ok(Some(name)) => {
-            if is_like_kernel_name(name.clone()).is_some() {
+            if is_like_kernel_name(&name) {
                 if is_logger_available {
                     warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
                 } else {
@@ -145,7 +150,7 @@ fn main() -> Result<()> {
 
         /* Scan config dir and look for ifcfg-* files */
         let config_dir_path = Path::new(config_dir);
-        let list_of_ifcfg_paths = match scan_config_dir(config_dir_path) {
+        let ifcfg_paths = match scan_config_dir(config_dir_path) {
             Some(val) => val,
             None => {
                 if is_logger_available {
@@ -159,12 +164,12 @@ fn main() -> Result<()> {
 
         /* Loop through ifcfg configurations and look for matching MAC address and return DEVICE name */
         device_config_name = String::new();
-        'config_loop: for path in list_of_ifcfg_paths {
+        for path in ifcfg_paths {
             let config_file_path: &Path = Path::new(&path);
 
             match parse_config_file(config_file_path, &mac_address) {
                 Ok(Some(name)) => {
-                    if is_like_kernel_name(name.clone()).is_some() {
+                    if is_like_kernel_name(&name) {
                         if is_logger_available {
                             warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
                         } else {
@@ -172,7 +177,7 @@ fn main() -> Result<()> {
                         }
                     }
                     device_config_name = format!("{}", name);
-                    break 'config_loop;
+                    break;
                 }
                 _ => continue
             }
@@ -205,19 +210,19 @@ fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
 
     let glob_pattern = config_dir.to_str()?.to_owned() + "/ifcfg-*";
 
-    let mut list_of_config_paths = vec![];
+    let mut config_paths = vec![];
 
     for entry in glob_with(&glob_pattern, glob_options).unwrap() {
         match entry {
             Ok(path) => {
-                list_of_config_paths.push(path.to_str()?.to_owned());
+                config_paths.push(path.to_str()?.to_owned());
             },
             Err(_err) => continue
         };
     }
 
-    if !list_of_config_paths.is_empty() {
-        Some(list_of_config_paths)
+    if !config_paths.is_empty() {
+        Some(config_paths)
     } else {
         None
     }
@@ -277,6 +282,7 @@ fn parse_kernel_cmdline(mac_address: &MacAddress, kernel_cmdline_path: &Path) ->
     }
 
     /* When MAC doesn't match it returns OK(None) */
+    // TODO: Return Ok()
     match device {
         dev => Ok(dev)
     }
@@ -328,6 +334,7 @@ fn parse_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Opt
         }
     }
 
+    // TODO: .to_string() at begining and also hwaddr.is_some() alone
     if hwaddr.is_some() {
         if hwaddr
             .unwrap()
@@ -353,8 +360,8 @@ fn parse_config_file(config_file: &Path, mac_address: &MacAddress) -> Result<Opt
 }
 
 /* Check if new devname is equal to kernel standard devname (eth0, etc.)
- * If such a name is detected return Some(()) else None */
-fn is_like_kernel_name(new_devname: String) -> Option<()> {
+ * If such a name is detected return true else false */
+fn is_like_kernel_name(new_devname: &str) -> bool {
     lazy_static! {
         /* Check if new devname is equal to kernel standard devname (eth0, etc.)
          * regex: ^eth\d+$
@@ -368,9 +375,9 @@ fn is_like_kernel_name(new_devname: String) -> Option<()> {
 
     /* Look for HWADDR= */
     if IS_NEW_DEVNAME_ETH_LIKE.is_match(&new_devname) {
-        Some(())
+        true
     } else {
-        None
+        false
     }
 }
 
