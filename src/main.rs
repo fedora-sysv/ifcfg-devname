@@ -61,7 +61,7 @@ fn main() -> Result<()> {
         }
     };
 
-    
+
     /* Check for testing hw address passed via arg */
     let mac_address = if !is_correct_number_args {
         /* Get MAC address of given interface */
@@ -78,7 +78,7 @@ fn main() -> Result<()> {
     /* convert mac_address to lowercase string */
     let simple_mac_address = mac_address.to_string().to_lowercase();
 
-    
+
     /* Check for alternative path to kernel cmdline */
     let kernel_cmdline = if !is_correct_number_args {
         Path::new(KERNEL_CMDLINE)
