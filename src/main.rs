@@ -227,9 +227,9 @@ fn parse_kernel_cmdline(mac_address: &str, kernel_cmdline_path: &Path) -> Result
     }
 
     /* When MAC doesn't match it returns OK(None) */
-    // TODO: Return Ok() + Err()
     match device {
-        dev => Ok(dev)
+        Some(dev) => Ok(Some(dev)),
+        None => Err("new device name not found".into())
     }
 }
 
@@ -279,15 +279,14 @@ fn parse_config_file(config_file: &Path, mac_address: &str) -> Result<Option<Str
         }
     }
 
-    // TODO: Return Ok() + Err()
     if hwaddr.is_some() {
         if hwaddr.unwrap().to_string().to_lowercase().ne(mac_address) {
-            Ok(None)
+            Err("new device name not found".into())
         } else {
             Ok(device)
         }
     } else {
-        Ok(None)
+        Err("new device name not found".into())
     }
 }
 
