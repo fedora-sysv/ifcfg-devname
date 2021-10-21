@@ -76,6 +76,12 @@ pull_request_rules:
   - name: Automatic merge on approval
     conditions:
       - "#approved-reviews-by>=1"
+      - "#review-requested=0"
+      - "#changes-requested-reviews-by=0"
+      - check-success=Build
+      - check-success=Unit test coverage
+      - check-success=Integration test coverage
+      
     actions:
       merge:
-        method: merge
+        method: rebase
