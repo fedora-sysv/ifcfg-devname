@@ -8,7 +8,7 @@ Version:        0.1.0
 Release:        1%{?dist}
 Summary:        Udev helper utility that provides network interface naming using kernel cmdline and ifcfg configuration
 
-License:        GPLv2
+License:        GPLv3
 
 URL:            https://github.com/jamacku/%{name}
 Source:         https://github.com/jamacku/%{name}/archive/%{version}.tar.gz#/%{name}-%{version}.tar.gz
