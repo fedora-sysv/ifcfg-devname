@@ -4,17 +4,11 @@ extern crate log;
 
 use std::env;
 use std::error;
-use std::path::Path;
 use std::fs::File;
-use std::io:: {
-    prelude::*,
-    BufReader
-};
+use std::io::{prelude::*, BufReader};
+use std::path::Path;
 
-use mac_address:: {
-    mac_address_by_name,
-    MacAddress
-};
+use mac_address::{mac_address_by_name, MacAddress};
 use std::str::FromStr;
 
 use glob::glob_with;
@@ -22,14 +16,9 @@ use glob::glob_with;
 use lazy_static::lazy_static;
 use regex::Regex;
 
-use syslog:: {
-    Facility,
-    Formatter3164,
-    BasicLogger
-};
+use syslog::{BasicLogger, Facility, Formatter3164};
 
 use log::LevelFilter;
-
 
 // --- --- --- //
 
@@ -41,7 +30,6 @@ const ENV: &str = "INTERFACE";
 const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
 const KERNEL_CMDLINE: &str = "/proc/cmdline";
 
-
 // --- --- --- //
 
 fn main() -> Result<()> {
@@ -49,11 +37,10 @@ fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
     let is_correct_number_args = args.len() > 3;
 
-    // TODO: rename long variable names
     logger_init();
 
     /* Read env variable INTERFACE in order to get names of if */
-    let kernel_if_name = match env::var_os(ENV).unwrap().into_string() {
+    let kernel_interface_name = match env::var_os(ENV).unwrap().into_string() {
         Ok(val) => val,
         Err(err) => {
             error!("Fail obtaining ENV {} - {}", ENV, err.to_string_lossy());
@@ -61,14 +48,13 @@ fn main() -> Result<()> {
         }
     };
 
-
     /* Check for testing hw address passed via arg */
     let mac_address = if !is_correct_number_args {
         /* Get MAC address of given interface */
-        match mac_address_by_name(&kernel_if_name) {
+        match mac_address_by_name(&kernel_interface_name) {
             Ok(Some(val)) => val,
             _ => {
-                error!("Fail to resolve MAC address of '{}'", kernel_if_name);
+                error!("Fail to resolve MAC address of '{}'", kernel_interface_name);
                 std::process::exit(1)
             }
         }
@@ -78,14 +64,12 @@ fn main() -> Result<()> {
     /* convert mac_address to lowercase string */
     let simple_mac_address = mac_address.to_string().to_lowercase();
 
-
     /* Check for alternative path to kernel cmdline */
     let kernel_cmdline = if !is_correct_number_args {
         Path::new(KERNEL_CMDLINE)
     } else {
         Path::new(&args[1])
     };
-
 
     /* Let's check kernel cmdline and also process ifname= entries
      * as they are documented in dracut.cmdline(7)
@@ -97,13 +81,15 @@ fn main() -> Result<()> {
                 warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
             }
             name
-        },
+        }
         _ => {
-            debug!("New device name for '{}' wasn't found at kernel cmdline", kernel_if_name);
+            debug!(
+                "New device name for '{}' wasn't found at kernel cmdline",
+                kernel_interface_name
+            );
             String::from("")
         }
     };
-
 
     /* When device was not found at kernel cmdline look into ifcfg files */
     if device_config_name.is_empty() {
@@ -119,7 +105,10 @@ fn main() -> Result<()> {
         let ifcfg_paths = match scan_config_dir(config_dir_path) {
             Some(val) => val,
             None => {
-                error!("Fail to get list of ifcfg files from directory {}", config_dir);
+                error!(
+                    "Fail to get list of ifcfg files from directory {}",
+                    config_dir
+                );
                 std::process::exit(1)
             }
         };
@@ -137,11 +126,10 @@ fn main() -> Result<()> {
                     device_config_name = format!("{}", name);
                     break;
                 }
-                _ => continue
+                _ => continue,
             }
         }
     }
-
 
     if !device_config_name.is_empty() {
         println!("{}", device_config_name);
@@ -151,7 +139,6 @@ fn main() -> Result<()> {
         std::process::exit(1);
     }
 }
-
 
 // --- Functions --- //
 /* Scan directory /etc/sysconfig/network-scripts for ifcfg files */
@@ -170,8 +157,8 @@ fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
         match entry {
             Ok(path) => {
                 config_paths.push(path.to_str()?.to_owned());
-            },
-            Err(_err) => continue
+            }
+            Err(_err) => continue,
         };
     }
 
@@ -211,14 +198,14 @@ fn parse_kernel_cmdline(mac_address: &str, kernel_cmdline_path: &Path) -> Result
         for capture in REGEX_DEVICE_HWADDR_PAIR.captures_iter(&kernel_cmdline) {
             device = Some(capture[1].parse()?);
             hwaddr = Some(capture[2].parse()?);
-                
             /* Check MAC */
             if hwaddr
                 .unwrap()
                 .to_string()
                 .to_owned()
                 .to_lowercase()
-                .eq(mac_address) {
+                .eq(mac_address)
+            {
                 break;
             } else {
                 device = None;
@@ -229,7 +216,7 @@ fn parse_kernel_cmdline(mac_address: &str, kernel_cmdline_path: &Path) -> Result
     /* When MAC doesn't match it returns OK(None) */
     match device {
         Some(_) => Ok(device),
-        None => Err("new device name not found".into())
+        None => Err("new device name not found".into()),
     }
 }
 
@@ -314,7 +301,7 @@ fn is_like_kernel_name(new_devname: &str) -> bool {
 
 /* Initialize logging, by default log to syslog, If syslog isn't available log to stderr */
 fn logger_init() {
-    /* Setup syslog logger */ 
+    /* Setup syslog logger */
     let formatter = Formatter3164 {
         facility: Facility::LOG_USER,
         hostname: None,
@@ -326,12 +313,12 @@ fn logger_init() {
     if let Ok(logger) = syslog::unix(formatter) {
         /* This is a simple convenience wrapper over set_logger */
         log::set_boxed_logger(Box::new(BasicLogger::new(logger)))
-            .map(|()| log::set_max_level(LevelFilter::Info)).unwrap();
+            .map(|()| log::set_max_level(LevelFilter::Info))
+            .unwrap();
     } else {
         stderrlog::new().module(module_path!()).init().unwrap();
     }
 }
-
 
 // --- Unit tests --- //
 #[cfg(test)]
@@ -341,19 +328,18 @@ mod should {
 
     const TEST_CONFIG_DIR: &str = "./tests/unit_test_data/ifcfgs";
     const TEST_KERNEL_CMDLINE_DIR: &str = "./tests/unit_test_data/cmdlines";
-    
-    
     // --- Kernel cmdline parser - Unit tests --- //
     #[test]
     fn parse_cmdline() {
-        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:1F").unwrap().to_string().to_lowercase();
+        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:1F")
+            .unwrap()
+            .to_string()
+            .to_lowercase();
         let kernel_cmdline_path = Path::new(TEST_KERNEL_CMDLINE_DIR).join("1_should_pass");
 
         let device_config_name = match parse_kernel_cmdline(&mac_address, &kernel_cmdline_path) {
             Ok(Some(name)) => name,
-            _ => {
-                String::from("")
-            }
+            _ => String::from(""),
         };
 
         assert_eq!("unit_test_1", device_config_name);
@@ -362,19 +348,19 @@ mod should {
     #[test]
     #[should_panic]
     fn not_parse_cmdline() {
-        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:2F").unwrap().to_string().to_lowercase();
+        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:2F")
+            .unwrap()
+            .to_string()
+            .to_lowercase();
         let kernel_cmdline_path = Path::new(TEST_KERNEL_CMDLINE_DIR).join("2_should_fail");
 
         let device_config_name = match parse_kernel_cmdline(&mac_address, &kernel_cmdline_path) {
             Ok(Some(name)) => name,
-            _ => {
-                String::from("")
-            }
+            _ => String::from(""),
         };
 
         assert_eq!("unit_test_2", device_config_name);
     }
-
 
     // --- Scaning and parsing of ifcfg configuration files - Unit tests --- //
     #[test]
@@ -382,10 +368,11 @@ mod should {
         let ifcfg_dir_path = Path::new(TEST_CONFIG_DIR);
 
         let test_result = match scan_config_dir(ifcfg_dir_path) {
-            Some(result) => result.eq(
-                    &vec!("tests/unit_test_data/ifcfgs/ifcfg-eth0", "tests/unit_test_data/ifcfgs/ifcfg-eth1")
-                ),
-            _ => false
+            Some(result) => result.eq(&vec![
+                "tests/unit_test_data/ifcfgs/ifcfg-eth0",
+                "tests/unit_test_data/ifcfgs/ifcfg-eth1",
+            ]),
+            _ => false,
         };
 
         assert!(test_result);
@@ -393,12 +380,15 @@ mod should {
 
     #[test]
     fn parse_ifcfg_configuration() {
-        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:3F").unwrap().to_string().to_lowercase();
+        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:3F")
+            .unwrap()
+            .to_string()
+            .to_lowercase();
         let ifcfg_config_path = Path::new(TEST_CONFIG_DIR).join("ifcfg-eth0");
 
         let test_result = match parse_config_file(&ifcfg_config_path, &mac_address) {
             Ok(Some(result)) => result.eq("correct_if_name"),
-            _ => false
+            _ => false,
         };
 
         assert!(test_result);
@@ -407,12 +397,15 @@ mod should {
     #[test]
     #[should_panic]
     fn not_parse_ifcfg_configuration() {
-        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:4F").unwrap().to_string().to_lowercase();
+        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:4F")
+            .unwrap()
+            .to_string()
+            .to_lowercase();
         let ifcfg_config_path = Path::new(TEST_CONFIG_DIR).join("ifcfg-eth1");
 
         let test_result = match parse_config_file(&ifcfg_config_path, &mac_address) {
             Ok(Some(_)) => true,
-            _ => false
+            _ => false,
         };
 
         assert!(test_result);
