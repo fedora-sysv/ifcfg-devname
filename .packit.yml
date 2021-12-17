@@ -1,0 +1,22 @@
+# Packit config
+# doc: https://packit.dev/docs/
+---
+specfile_path: ./rust-ifcfg-devname.spec
+upstream_tag_template: "v{version}"
+
+upstream_package_name: ifcfg-devname
+downstream_package_name: rust-ifcfg-devname
+
+jobs:
+  - job: copr_build
+    trigger: release
+    metadata:
+      targets:
+        - fedora-rawhide
+        - centos-stream-x86_64
+
+  - job: propose_downstream
+    trigger: release
+    metadata:
+      dist_git_branches:
+        - main
