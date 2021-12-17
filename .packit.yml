@@ -9,7 +9,7 @@ downstream_package_name: rust-ifcfg-devname
 
 jobs:
   - job: copr_build
-    trigger: release
+    trigger: [release, pull-request]
     metadata:
       targets:
         - fedora-rawhide
