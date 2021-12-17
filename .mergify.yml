@@ -32,12 +32,12 @@ pull_request_rules:
       label:
         remove:
           - tests
-          
+
   - name: Configuration label
     conditions:
       - or:
-        - files~=\.yml$
-        - files~=\.json$
+          - files~=\.yml$
+          - files~=\.json$
     actions:
       label:
         add:
@@ -47,13 +47,13 @@ pull_request_rules:
   - name: Configuration label - romove
     conditions:
       - and:
-        - -files~=\.yml$
-        - -files~=\.json$
+          - -files~=\.yml$
+          - -files~=\.json$
     actions:
       label:
         remove:
           - configuration
-          
+
   - name: Documentation label
     conditions:
       - files~=\.md$
@@ -79,7 +79,9 @@ pull_request_rules:
       - check-success=Build
       - check-success=Unit test coverage
       - check-success=Integration test coverage
-      
+      - check-success=packit/rpm-build-fedora-rawhide-x86_64
+      - check-success=packit/rpm-build-centos-stream-9-x86_64
+
     actions:
       merge:
         method: rebase
