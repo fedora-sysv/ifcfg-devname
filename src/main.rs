@@ -4,8 +4,6 @@ extern crate log;
 
 use std::env;
 use std::error;
-use std::fs::File;
-use std::io::{prelude::*, BufReader};
 use std::path::Path;
 
 use mac_address::{mac_address_by_name, MacAddress};
@@ -16,23 +14,18 @@ use glob::glob_with;
 use lazy_static::lazy_static;
 use regex::Regex;
 
-use syslog::{BasicLogger, Facility, Formatter3164};
-
-use log::LevelFilter;
-
-/* Implement conversion from any type that implements the Error trait into the trait object Box<Error>
- * https://doc.rust-lang.org/std/keyword.dyn.html */
-type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
+mod logger;
+mod parse;
 
 const ENV: &str = "INTERFACE";
 const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
 const KERNEL_CMDLINE: &str = "/proc/cmdline";
 
-fn main() -> Result<()> {
+fn main() -> Result<(), Box<dyn error::Error>> {
     let args: Vec<String> = env::args().collect();
     let is_correct_number_args = args.len() > 3;
 
-    logger_init();
+    logger::init();
 
     let kernel_interface_name = get_interface_name();
 
@@ -63,7 +56,7 @@ fn main() -> Result<()> {
      * as they are documented in dracut.cmdline(7)
      * Example: ifname=test:aa:bb:cc:dd:ee:ff
      */
-    let mut device_config_name = match parse_kernel_cmdline(&simple_mac_address, kernel_cmdline) {
+    let mut device_config_name = match parse::kernel_cmdline(&simple_mac_address, kernel_cmdline) {
         Ok(Some(name)) => {
             if is_like_kernel_name(&name) {
                 warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
@@ -106,7 +99,7 @@ fn main() -> Result<()> {
         for path in ifcfg_paths {
             let config_file_path: &Path = Path::new(&path);
 
-            match parse_config_file(config_file_path, &simple_mac_address) {
+            match parse::config_file(config_file_path, &simple_mac_address) {
                 Ok(Some(name)) => {
                     if is_like_kernel_name(&name) {
                         warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
@@ -125,27 +118,6 @@ fn main() -> Result<()> {
     } else {
         error!("Device name or MAC address weren't found in ifcfg files.");
         std::process::exit(1);
-    }
-}
-
-/* Initialize logging, by default log to syslog, If syslog isn't available log to stderr */
-fn logger_init() {
-    /* Setup syslog logger */
-    let formatter = Formatter3164 {
-        facility: Facility::LOG_USER,
-        hostname: None,
-        process: "ifcfg-devname".into(),
-        pid: 0,
-    };
-
-    /* Connect to syslog */
-    if let Ok(logger) = syslog::unix(formatter) {
-        /* This is a simple convenience wrapper over set_logger */
-        log::set_boxed_logger(Box::new(BasicLogger::new(logger)))
-            .map(|()| log::set_max_level(LevelFilter::Info))
-            .unwrap();
-    } else {
-        stderrlog::new().module(module_path!()).init().unwrap();
     }
 }
 
@@ -189,114 +161,6 @@ fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
     }
 }
 
-/* Scan kernel cmdline and look for given hardware address and return new device name */
-#[allow(unused)]
-fn parse_kernel_cmdline(mac_address: &str, kernel_cmdline_path: &Path) -> Result<Option<String>> {
-    let file = File::open(kernel_cmdline_path)?;
-    let mut reader = BufReader::new(file);
-    let mut hwaddr: Option<MacAddress> = None;
-    let mut device: Option<String> = None;
-    let mut kernel_cmdline = String::new();
-
-    lazy_static! {
-        /* Look for patterns like this ifname=new_name:aa:BB:CC:DD:ee:ff at kernel command line
-         * regex: ifname=(\S[^:]{0,14}):(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))
-         * ifname=(group1):(group2) - look for pattern starting with `ifname=` following with two groups separated with `:` character
-         * group1: (\S[^:]{0,14}) - match non-whitespace characters ; minimum 1 and maximum 15 ; do not match `:` character
-         * group2: (([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})) - match 48-bit hw address expressed in hexadecimal system ; each of inner 8-bits are separated with `:` character ; case insensitive
-         * example: ifname=new-devname007:00:1b:44:11:3A:B7
-         *                 ^^^^^^^^^^^^^^ ~~~~~~~~~~~~~~~~~
-         *                 new dev name   hw address of if */
-        static ref REGEX_DEVICE_HWADDR_PAIR: Regex = Regex::new(r"ifname=(\S[^:]{0,14}):(([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}))").unwrap();
-    }
-
-    /* Read kernel command line and look for ifname= */
-    reader.read_line(&mut kernel_cmdline)?;
-
-    /* Look for ifname= */
-    if REGEX_DEVICE_HWADDR_PAIR.is_match(&kernel_cmdline) {
-        for capture in REGEX_DEVICE_HWADDR_PAIR.captures_iter(&kernel_cmdline) {
-            device = Some(capture[1].parse()?);
-            hwaddr = Some(capture[2].parse()?);
-            /* Check MAC */
-            if hwaddr
-                .unwrap()
-                .to_string()
-                .to_owned()
-                .to_lowercase()
-                .eq(mac_address)
-            {
-                break;
-            } else {
-                device = None;
-            }
-        }
-    }
-
-    /* When MAC doesn't match it returns OK(None) */
-    match device {
-        Some(_) => Ok(device),
-        None => Err("new device name not found".into()),
-    }
-}
-
-/* Scan ifcfg files and look for given HWADDR and return DEVICE name */
-fn parse_config_file(config_file: &Path, mac_address: &str) -> Result<Option<String>> {
-    let file = File::open(config_file)?;
-    let reader = BufReader::new(file);
-    let mut hwaddr: Option<MacAddress> = None;
-    let mut device: Option<String> = None;
-
-    lazy_static! {
-        /* Look for line that starts with DEVICE= and then store everything else in group
-         * regex: ^\s*DEVICE=(\S[^:]{0,14})
-         * ^\s*DEVICE=(group1) - look for line starting with `DEVICE=` (ignore whitespaces) following with group of characters describing new device name
-         * group1: (\S[^:]{0,14}) - match non-whitespace characters ; minimum 1 and maximum 15 ; do not match `:` character
-         * example: DEVICE=new-devname007
-         *                 ^^^^^^^^^^^^^^
-         *                 new dev name */
-        static ref REGEX_DEVICE: Regex = Regex::new(r"^\s*DEVICE=(\S[^:]{0,14})").unwrap();
-
-        /* Look for line with mac address and store its value in group for later
-         * regex: ^\s*HWADDR=(([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}))
-         * ^\s*HWADDR=(group1) - look for line starting with `HWADDR=` (ignore whitespaces) following with group of characters describing hw address of device
-         * group1: (([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})) - match 48-bit hw address expressed in hexadecimal system ; each of inner 8-bits are separated with `:` character ; case insensitive
-         * example: HWADDR=00:1b:44:11:3A:B7
-         *                 ^^^^^^^^^^^^^^^^^
-         *                 hw address of if */
-        static ref REGEX_HWADDR: Regex = Regex::new(r"^\s*HWADDR=(([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}))").unwrap();
-    }
-
-    /* Read lines of given file and look for DEVICE= and HWADDR= */
-    for line in reader.lines() {
-        let line = line?;
-
-        /* Look for HWADDR= */
-        if REGEX_HWADDR.is_match(&line) {
-            for capture in REGEX_HWADDR.captures_iter(&line) {
-                hwaddr = Some(capture[1].parse()?);
-            }
-        }
-
-        /* Look for DEVICE= */
-        if REGEX_DEVICE.is_match(&line) {
-            for capture in REGEX_DEVICE.captures_iter(&line) {
-                device = Some(capture[1].parse()?);
-            }
-        }
-    }
-
-    if hwaddr.is_some() {
-        if hwaddr.unwrap().to_string().to_lowercase().ne(mac_address) {
-            Err("new device name not found".into())
-        } else {
-            Ok(device)
-        }
-    } else {
-        Err("new device name not found".into())
-    }
-}
-
 /* Check if new devname is equal to kernel standard devname (eth0, etc.)
  * If such a name is detected return true else false */
 fn is_like_kernel_name(new_devname: &str) -> bool {
@@ -335,7 +199,7 @@ mod should {
             .to_lowercase();
         let kernel_cmdline_path = Path::new(TEST_KERNEL_CMDLINE_DIR).join("1_should_pass");
 
-        let device_config_name = match parse_kernel_cmdline(&mac_address, &kernel_cmdline_path) {
+        let device_config_name = match parse::kernel_cmdline(&mac_address, &kernel_cmdline_path) {
             Ok(Some(name)) => name,
             _ => String::from(""),
         };
@@ -352,7 +216,7 @@ mod should {
             .to_lowercase();
         let kernel_cmdline_path = Path::new(TEST_KERNEL_CMDLINE_DIR).join("2_should_fail");
 
-        let device_config_name = match parse_kernel_cmdline(&mac_address, &kernel_cmdline_path) {
+        let device_config_name = match parse::kernel_cmdline(&mac_address, &kernel_cmdline_path) {
             Ok(Some(name)) => name,
             _ => String::from(""),
         };
@@ -384,7 +248,7 @@ mod should {
             .to_lowercase();
         let ifcfg_config_path = Path::new(TEST_CONFIG_DIR).join("ifcfg-eth0");
 
-        let test_result = match parse_config_file(&ifcfg_config_path, &mac_address) {
+        let test_result = match parse::config_file(&ifcfg_config_path, &mac_address) {
             Ok(Some(result)) => result.eq("correct_if_name"),
             _ => false,
         };
@@ -401,7 +265,7 @@ mod should {
             .to_lowercase();
         let ifcfg_config_path = Path::new(TEST_CONFIG_DIR).join("ifcfg-eth1");
 
-        let test_result = match parse_config_file(&ifcfg_config_path, &mac_address) {
+        let test_result = match parse::config_file(&ifcfg_config_path, &mac_address) {
             Ok(Some(_)) => true,
             _ => false,
         };
