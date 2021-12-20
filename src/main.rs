@@ -8,9 +8,7 @@ use std::str::FromStr;
 
 use mac_address::{mac_address_by_name, MacAddress};
 
-use lazy_static::lazy_static;
-use regex::Regex;
-
+mod lib;
 mod logger;
 mod parse;
 mod scan;
@@ -20,6 +18,7 @@ const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
 const KERNEL_CMDLINE: &str = "/proc/cmdline";
 
 fn main() -> Result<(), Box<dyn error::Error>> {
+    //let input = lib::process_arguments(&env::args());
     let args: Vec<String> = env::args().collect();
     let is_correct_number_args = args.len() > 3;
 
@@ -56,7 +55,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
      */
     let mut device_config_name = match parse::kernel_cmdline(&simple_mac_address, kernel_cmdline) {
         Ok(Some(name)) => {
-            if is_like_kernel_name(&name) {
+            if lib::is_like_kernel_name(&name) {
                 warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
             }
             name
@@ -99,7 +98,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
             match parse::config_file(config_file_path, &simple_mac_address) {
                 Ok(Some(name)) => {
-                    if is_like_kernel_name(&name) {
+                    if lib::is_like_kernel_name(&name) {
                         warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
                     }
                     device_config_name = format!("{}", name);
@@ -129,28 +128,6 @@ fn get_interface_name() -> String {
     };
 
     name
-}
-
-/* Check if new devname is equal to kernel standard devname (eth0, etc.)
- * If such a name is detected return true else false */
-fn is_like_kernel_name(new_devname: &str) -> bool {
-    lazy_static! {
-        /* Check if new devname is equal to kernel standard devname (eth0, etc.)
-         * regex: ^eth\d+$
-         * ^eth - look for name starting with `eth`
-         * \d+$ - following with set of numbers [0-9]
-         * example: eth1234 | eth1234a
-         *          ^^^^^^^^  ~~~~~~~~
-         *           MATCH    NO MATCH */
-        static ref IS_NEW_DEVNAME_ETH_LIKE: Regex = Regex::new(r"^eth\d+$").unwrap();
-    }
-
-    /* Look for HWADDR= */
-    if IS_NEW_DEVNAME_ETH_LIKE.is_match(&new_devname) {
-        true
-    } else {
-        false
-    }
 }
 
 #[cfg(test)]
