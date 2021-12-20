@@ -1,9 +1,7 @@
+use std::error;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
-
 use std::path::Path;
-
-use std::error;
 
 use mac_address::MacAddress;
 
