@@ -1,7 +1,3 @@
-use std::path::Path;
-
-use mac_address::MacAddress;
-
 #[path = "./parse.rs"]
 mod parse;
 
@@ -11,7 +7,11 @@ mod scan;
 #[cfg(test)]
 pub mod should {
     use super::*;
+
+    use std::path::Path;
     use std::str::FromStr;
+
+    use mac_address::MacAddress;
 
     const TEST_CONFIG_DIR: &str = "./tests/unit_test_data/ifcfgs";
     const TEST_KERNEL_CMDLINE_DIR: &str = "./tests/unit_test_data/cmdlines";

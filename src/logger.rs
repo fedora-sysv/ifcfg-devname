@@ -20,7 +20,6 @@ fn connect_syslog() -> Result<Logger<LoggerBackend, Formatter3164>, Error> {
     syslog::unix(formatter)
 }
 
-/* This is a simple convenience wrapper over set_logger */
 fn setup_syslog(logger: Logger<LoggerBackend, Formatter3164>) {
     log::set_boxed_logger(Box::new(BasicLogger::new(logger)))
         .map(|()| log::set_max_level(LevelFilter::Info))
