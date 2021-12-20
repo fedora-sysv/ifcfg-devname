@@ -20,8 +20,6 @@ use syslog::{BasicLogger, Facility, Formatter3164};
 
 use log::LevelFilter;
 
-// --- --- --- //
-
 /* Implement conversion from any type that implements the Error trait into the trait object Box<Error>
  * https://doc.rust-lang.org/std/keyword.dyn.html */
 type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
@@ -30,23 +28,13 @@ const ENV: &str = "INTERFACE";
 const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
 const KERNEL_CMDLINE: &str = "/proc/cmdline";
 
-// --- --- --- //
-
 fn main() -> Result<()> {
-    /* Store any commandline arguments */
     let args: Vec<String> = env::args().collect();
     let is_correct_number_args = args.len() > 3;
 
     logger_init();
 
-    /* Read env variable INTERFACE in order to get names of if */
-    let kernel_interface_name = match env::var_os(ENV).unwrap().into_string() {
-        Ok(val) => val,
-        Err(err) => {
-            error!("Fail obtaining ENV {} - {}", ENV, err.to_string_lossy());
-            std::process::exit(1)
-        }
-    };
+    let kernel_interface_name = get_interface_name();
 
     /* Check for testing hw address passed via arg */
     let mac_address = if !is_correct_number_args {
@@ -61,7 +49,7 @@ fn main() -> Result<()> {
     } else {
         MacAddress::from_str(&args[3])?
     };
-    /* convert mac_address to lowercase string */
+
     let simple_mac_address = mac_address.to_string().to_lowercase();
 
     /* Check for alternative path to kernel cmdline */
@@ -140,7 +128,39 @@ fn main() -> Result<()> {
     }
 }
 
-// --- Functions --- //
+/* Initialize logging, by default log to syslog, If syslog isn't available log to stderr */
+fn logger_init() {
+    /* Setup syslog logger */
+    let formatter = Formatter3164 {
+        facility: Facility::LOG_USER,
+        hostname: None,
+        process: "ifcfg-devname".into(),
+        pid: 0,
+    };
+
+    /* Connect to syslog */
+    if let Ok(logger) = syslog::unix(formatter) {
+        /* This is a simple convenience wrapper over set_logger */
+        log::set_boxed_logger(Box::new(BasicLogger::new(logger)))
+            .map(|()| log::set_max_level(LevelFilter::Info))
+            .unwrap();
+    } else {
+        stderrlog::new().module(module_path!()).init().unwrap();
+    }
+}
+
+fn get_interface_name() -> String {
+    let name = match env::var_os(ENV).unwrap().into_string() {
+        Ok(val) => val,
+        Err(err) => {
+            error!("Fail obtaining ENV {} - {}", ENV, err.to_string_lossy());
+            std::process::exit(1)
+        }
+    };
+
+    name
+}
+
 /* Scan directory /etc/sysconfig/network-scripts for ifcfg files */
 fn scan_config_dir(config_dir: &Path) -> Option<Vec<String>> {
     let glob_options = glob::MatchOptions {
@@ -299,28 +319,6 @@ fn is_like_kernel_name(new_devname: &str) -> bool {
     }
 }
 
-/* Initialize logging, by default log to syslog, If syslog isn't available log to stderr */
-fn logger_init() {
-    /* Setup syslog logger */
-    let formatter = Formatter3164 {
-        facility: Facility::LOG_USER,
-        hostname: None,
-        process: "ifcfg-devname".into(),
-        pid: 0,
-    };
-
-    /* Connect to syslog */
-    if let Ok(logger) = syslog::unix(formatter) {
-        /* This is a simple convenience wrapper over set_logger */
-        log::set_boxed_logger(Box::new(BasicLogger::new(logger)))
-            .map(|()| log::set_max_level(LevelFilter::Info))
-            .unwrap();
-    } else {
-        stderrlog::new().module(module_path!()).init().unwrap();
-    }
-}
-
-// --- Unit tests --- //
 #[cfg(test)]
 mod should {
     use super::*;
