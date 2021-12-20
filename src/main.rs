@@ -24,7 +24,13 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     logger::init();
 
-    let kernel_interface_name = get_interface_name();
+    let kernel_interface_name = match env::var_os(ENV).unwrap().into_string() {
+        Ok(val) => val,
+        Err(err) => {
+            error!("Fail obtaining ENV {} - {}", ENV, err.to_string_lossy());
+            std::process::exit(1)
+        }
+    };
 
     /* Check for testing hw address passed via arg */
     let mac_address = if !is_correct_number_args {
@@ -116,18 +122,6 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         error!("Device name or MAC address weren't found in ifcfg files.");
         std::process::exit(1);
     }
-}
-
-fn get_interface_name() -> String {
-    let name = match env::var_os(ENV).unwrap().into_string() {
-        Ok(val) => val,
-        Err(err) => {
-            error!("Fail obtaining ENV {} - {}", ENV, err.to_string_lossy());
-            std::process::exit(1)
-        }
-    };
-
-    name
 }
 
 #[cfg(test)]
