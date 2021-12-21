@@ -59,10 +59,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
             name
         }
         _ => {
-            debug!(
-                "New device name for '{}' wasn't found at kernel cmdline",
-                kernel_interface_name
-            );
+            debug!("New device name for '{}' wasn't found at kernel cmdline", kernel_interface_name);
             String::from("")
         }
     };
@@ -74,10 +71,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         let ifcfg_paths = match scan::config_dir(config_dir_path) {
             Some(val) => val,
             None => {
-                error!(
-                    "Fail to get list of ifcfg files from directory {}",
-                    config_dir
-                );
+                error!("Fail to get list of ifcfg files from directory {}", config_dir);
                 std::process::exit(1)
             }
         };
