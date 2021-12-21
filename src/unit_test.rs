@@ -18,7 +18,7 @@ pub mod should {
 
     const TEST_CONFIG_DIR: &str = "./tests/unit_test_data/ifcfgs";
     const TEST_KERNEL_CMDLINE_DIR: &str = "./tests/unit_test_data/cmdlines";
-    // --- Kernel cmdline parser - Unit tests --- //
+
     #[test]
     fn parse_cmdline() {
         let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:1F")
@@ -110,5 +110,25 @@ pub mod should {
         let is_test_mode = lib::is_test_mode(&ARGS, NUMBER_PARAMS_REQUIRED);
 
         assert!(is_test_mode);
+    }
+
+    #[test]
+    fn check_for_kernel_cmdline_path() {
+        const IS_TEST_MODE: bool = false;
+        const ARGS: &Vec<String> = &Vec::new();
+        let expected: &Path = &Path::new("/proc/cmdline");
+
+        let kernel_cmdline = lib::get_kernel_cmdline(IS_TEST_MODE, &ARGS);
+
+        assert_eq!(expected, kernel_cmdline);
+    }
+
+    #[test]
+    fn check_if_is_like_kernel_name() {
+        const KERNEL_LIKE_NAME: &str = "eth123";
+
+        let is_like_kernel = lib::is_like_kernel_name(KERNEL_LIKE_NAME);
+
+        assert!(is_like_kernel);
     }
 }
