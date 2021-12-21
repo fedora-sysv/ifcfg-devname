@@ -13,14 +13,13 @@ mod logger;
 mod parse;
 mod scan;
 
-const ENV: &str = "INTERFACE";
-const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
-const KERNEL_CMDLINE: &str = "/proc/cmdline";
-const TEST_MODE_PARAMS_REQUIRED: usize = 3;
-
 fn main() -> Result<(), Box<dyn error::Error>> {
+    const ENV: &str = "INTERFACE";
+    const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
+    const TEST_MODE_PARAMS_REQUIRED: usize = 3;
+
     let args: Vec<String> = env::args().collect();
-    let is_test_mode = is_test_mode(&args, TEST_MODE_PARAMS_REQUIRED);
+    let is_test_mode = lib::is_test_mode(&args, TEST_MODE_PARAMS_REQUIRED);
 
     logger::init();
 
@@ -46,7 +45,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     let simple_mac_address = mac_address.to_string().to_lowercase();
 
-    let kernel_cmdline = get_kernel_cmdline(is_test_mode, &args);
+    let kernel_cmdline = lib::get_kernel_cmdline(is_test_mode, &args);
 
     /* Let's check kernel cmdline and also process ifname= entries
      * as they are documented in dracut.cmdline(7)
@@ -107,24 +106,6 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         error!("Device name or MAC address weren't found in ifcfg files.");
         std::process::exit(1);
     }
-}
-
-fn is_test_mode(params: &Vec<String>, number_params_required: usize) -> bool {
-    if params.len() > number_params_required {
-        true
-    } else {
-        false
-    }
-}
-
-fn get_kernel_cmdline(is_test_mode: bool, args: &Vec<String>) -> &Path {
-    let kernel_cmdline = if is_test_mode {
-        Path::new(&args[1])
-    } else {
-        Path::new(KERNEL_CMDLINE)
-    };
-
-    kernel_cmdline
 }
 
 #[cfg(test)]

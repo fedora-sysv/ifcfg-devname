@@ -4,6 +4,9 @@ mod parse;
 #[path = "./scan.rs"]
 mod scan;
 
+#[path = "./lib.rs"]
+mod lib;
+
 #[cfg(test)]
 pub mod should {
     use super::*;
@@ -96,5 +99,16 @@ pub mod should {
         };
 
         assert!(test_result);
+    }
+
+    #[test]
+    #[should_panic]
+    fn check_for_test_mode() {
+        const NUMBER_PARAMS_REQUIRED: usize = 3;
+        const ARGS: Vec<String> = Vec::new();
+
+        let is_test_mode = lib::is_test_mode(&ARGS, NUMBER_PARAMS_REQUIRED);
+
+        assert!(is_test_mode);
     }
 }
