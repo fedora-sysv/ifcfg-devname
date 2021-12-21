@@ -2,7 +2,7 @@
 name = "ifcfg-devname"
 
 version = "0.1.1"
-edition = "2018"
+edition = "2021"
 license = "GPL-3.0"
 authors = ["Jan Macku <jamacku@redhat.com>"]
 repository = "https://github.com/jamacku/ifcfg-devname"
