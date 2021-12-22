@@ -31,11 +31,11 @@ pub fn is_test_mode(params: &Vec<String>, number_params_required: usize) -> bool
     }
 }
 
-pub fn get_kernel_cmdline(is_test_mode: bool, args: &Vec<String>) -> &Path {
+pub fn get_kernel_cmdline(is_test_mode: bool, args: &Vec<String>, index: usize) -> &Path {
     const KERNEL_CMDLINE: &str = "/proc/cmdline";
 
     let kernel_cmdline = if is_test_mode {
-        Path::new(&args[1])
+        Path::new(&args[index])
     } else {
         Path::new(KERNEL_CMDLINE)
     };
@@ -46,8 +46,6 @@ pub fn get_kernel_cmdline(is_test_mode: bool, args: &Vec<String>) -> &Path {
 #[cfg(test)]
 pub mod should {
     use super::*;
-
-    use std::path::Path;
 
     #[test]
     #[should_panic]
@@ -64,9 +62,10 @@ pub mod should {
     fn check_for_kernel_cmdline_path() {
         const IS_TEST_MODE: bool = false;
         const ARGS: &Vec<String> = &Vec::new();
+        const INDEX: usize = 1;
         let expected: &Path = &Path::new("/proc/cmdline");
 
-        let kernel_cmdline = get_kernel_cmdline(IS_TEST_MODE, &ARGS);
+        let kernel_cmdline = get_kernel_cmdline(IS_TEST_MODE, &ARGS, INDEX);
 
         assert_eq!(expected, kernel_cmdline);
     }

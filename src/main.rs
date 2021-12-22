@@ -12,6 +12,12 @@ mod logger;
 mod parser;
 mod scanner;
 
+enum Args {
+    KernelCmdline = 1,
+    ConfigDir,
+    Mac
+}
+
 fn main() -> Result<(), Box<dyn error::Error>> {
     const ENV: &str = "INTERFACE";
     const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
@@ -30,21 +36,17 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         }
     };
 
-    let mac_address = if !is_test_mode {
-        match mac_address_by_name(&kernel_interface_name) {
-            Ok(Some(val)) => val,
-            _ => {
-                error!("Fail to resolve MAC address of '{}'", kernel_interface_name);
-                std::process::exit(1)
-            }
+    let mac_address = match get_mac_address(is_test_mode, &args, Args::Mac as usize, &kernel_interface_name) {
+        Ok(val) => val,
+        _ => {
+            error!("Fail to resolve MAC address of '{}'", kernel_interface_name);
+            std::process::exit(1)
         }
-    } else {
-        MacAddress::from_str(&args[3])?
     };
 
     let simple_mac_address = mac_address.to_string().to_lowercase();
 
-    let kernel_cmdline = lib::get_kernel_cmdline(is_test_mode, &args);
+    let kernel_cmdline = lib::get_kernel_cmdline(is_test_mode, &args, Args::KernelCmdline as usize);
 
     /* Let's check kernel cmdline and also process ifname= entries
      * as they are documented in dracut.cmdline(7)
@@ -64,7 +66,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     };
 
     if device_config_name.is_empty() {
-        let config_dir = if !is_test_mode { CONFIG_DIR } else { &args[2] };
+        let config_dir = if !is_test_mode { CONFIG_DIR } else { &args[Args::ConfigDir as usize] };
 
         let config_dir_path = Path::new(config_dir);
         let ifcfg_paths = match scanner::config_dir(config_dir_path) {
@@ -99,4 +101,18 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         error!("Device name or MAC address weren't found in ifcfg files.");
         std::process::exit(1);
     }
+}
+
+fn get_mac_address(is_test_mode: bool, args: &Vec<String>, index: usize, kernel_name: &String) -> Result<MacAddress, Box<dyn error::Error>> {
+    let mac_address = if is_test_mode {
+        let mac_address = args[index].clone();
+        MacAddress::from_str(&mac_address)?
+    } else {
+        match mac_address_by_name(kernel_name)? {
+            Some(mac) => mac,
+            None => panic!()
+        }
+    };
+
+    Ok(mac_address)
 }
