@@ -1,9 +1,6 @@
 use std::env;
 use std::error;
 use std::path::Path;
-use std::str::FromStr;
-
-use mac_address::{mac_address_by_name, MacAddress};
 
 use log::*;
 
@@ -36,7 +33,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         }
     };
 
-    let mac_address = match get_mac_address(is_test_mode, &args, Args::Mac as usize, &kernel_interface_name) {
+    let mac_address = match lib::get_mac_address(is_test_mode, &args, Args::Mac as usize, &kernel_interface_name) {
         Ok(val) => val,
         _ => {
             error!("Fail to resolve MAC address of '{}'", kernel_interface_name);
@@ -101,18 +98,4 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         error!("Device name or MAC address weren't found in ifcfg files.");
         std::process::exit(1);
     }
-}
-
-fn get_mac_address(is_test_mode: bool, args: &Vec<String>, index: usize, kernel_name: &String) -> Result<MacAddress, Box<dyn error::Error>> {
-    let mac_address = if is_test_mode {
-        let mac_address = args[index].clone();
-        MacAddress::from_str(&mac_address)?
-    } else {
-        match mac_address_by_name(kernel_name)? {
-            Some(mac) => mac,
-            None => panic!()
-        }
-    };
-
-    Ok(mac_address)
 }

@@ -1,4 +1,8 @@
 use std::path::Path;
+use std::error;
+use std::str::FromStr;
+
+use mac_address::{mac_address_by_name, MacAddress};
 
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -43,6 +47,20 @@ pub fn get_kernel_cmdline(is_test_mode: bool, args: &Vec<String>, index: usize) 
     kernel_cmdline
 }
 
+pub fn get_mac_address(is_test_mode: bool, args: &Vec<String>, index: usize, kernel_name: &String) -> Result<MacAddress, Box<dyn error::Error>> {
+    let mac_address = if is_test_mode {
+        let mac_address = args[index].clone();
+        MacAddress::from_str(&mac_address)?
+    } else {
+        match mac_address_by_name(kernel_name)? {
+            Some(mac) => mac,
+            None => panic!()
+        }
+    };
+
+    Ok(mac_address)
+}
+
 #[cfg(test)]
 pub mod should {
     use super::*;
@@ -65,7 +83,7 @@ pub mod should {
         const INDEX: usize = 1;
         let expected: &Path = &Path::new("/proc/cmdline");
 
-        let kernel_cmdline = get_kernel_cmdline(IS_TEST_MODE, &ARGS, INDEX);
+        let kernel_cmdline = get_kernel_cmdline(IS_TEST_MODE, ARGS, INDEX);
 
         assert_eq!(expected, kernel_cmdline);
     }
@@ -77,5 +95,16 @@ pub mod should {
         let is_like_kernel = is_like_kernel_name(KERNEL_LIKE_NAME);
 
         assert!(is_like_kernel);
+    }
+
+    #[test]
+    #[should_panic]
+    fn not_get_mac_address() {
+        const IS_TEST_MODE: bool = false;
+        const ARGS: &Vec<String> = &Vec::new();
+        const INDEX: usize = 3;
+        let kernel_name: String = String::from_str("this-should-fail").unwrap();
+
+        let _ = get_mac_address(IS_TEST_MODE, ARGS, INDEX, &kernel_name);
     }
 }
