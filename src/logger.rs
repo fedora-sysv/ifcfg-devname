@@ -42,4 +42,9 @@ pub mod should {
     fn setup_stderr_logger() {
         setup_stderr_logging();
     }
+
+    #[test]
+    fn connect_to_syslog() {
+        connect_syslog().unwrap();
+    }
 }

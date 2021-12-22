@@ -29,3 +29,25 @@ pub fn config_dir(config_dir: &Path) -> Option<Vec<String>> {
         None
     }
 }
+
+#[cfg(test)]
+pub mod should {
+    use super::*;
+
+    const TEST_CONFIG_DIR: &str = "./tests/unit_test_data/ifcfgs";
+
+    #[test]
+    fn scan_config_dir() {
+        let ifcfg_dir_path = Path::new(TEST_CONFIG_DIR);
+
+        let test_result = match config_dir(ifcfg_dir_path) {
+            Some(result) => result.eq(&vec![
+                "tests/unit_test_data/ifcfgs/ifcfg-eth0",
+                "tests/unit_test_data/ifcfgs/ifcfg-eth1",
+            ]),
+            _ => false,
+        };
+
+        assert!(test_result);
+    }
+}

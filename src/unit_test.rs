@@ -1,9 +1,6 @@
 #[path = "./parse.rs"]
 mod parse;
 
-#[path = "./scan.rs"]
-mod scan;
-
 #[path = "./lib.rs"]
 mod lib;
 
@@ -50,22 +47,6 @@ pub mod should {
         };
 
         assert_eq!("unit_test_2", device_config_name);
-    }
-
-    // --- Scaning and parsing of ifcfg configuration files - Unit tests --- //
-    #[test]
-    fn scan_ifcfg_dir() {
-        let ifcfg_dir_path = Path::new(TEST_CONFIG_DIR);
-
-        let test_result = match scan::config_dir(ifcfg_dir_path) {
-            Some(result) => result.eq(&vec![
-                "tests/unit_test_data/ifcfgs/ifcfg-eth0",
-                "tests/unit_test_data/ifcfgs/ifcfg-eth1",
-            ]),
-            _ => false,
-        };
-
-        assert!(test_result);
     }
 
     #[test]

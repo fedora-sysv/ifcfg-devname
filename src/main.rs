@@ -10,7 +10,7 @@ use log::*;
 mod lib;
 mod logger;
 mod parse;
-mod scan;
+mod scanner;
 
 fn main() -> Result<(), Box<dyn error::Error>> {
     const ENV: &str = "INTERFACE";
@@ -67,7 +67,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         let config_dir = if !is_test_mode { CONFIG_DIR } else { &args[2] };
 
         let config_dir_path = Path::new(config_dir);
-        let ifcfg_paths = match scan::config_dir(config_dir_path) {
+        let ifcfg_paths = match scanner::config_dir(config_dir_path) {
             Some(val) => val,
             None => {
                 error!("Fail to get list of ifcfg files from directory {}", config_dir);
