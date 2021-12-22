@@ -1,9 +1,6 @@
 #[path = "./parse.rs"]
 mod parse;
 
-#[path = "./lib.rs"]
-mod lib;
-
 #[cfg(test)]
 pub mod should {
     use super::*;
@@ -80,36 +77,5 @@ pub mod should {
         };
 
         assert!(test_result);
-    }
-
-    #[test]
-    #[should_panic]
-    fn check_for_test_mode() {
-        const NUMBER_PARAMS_REQUIRED: usize = 3;
-        const ARGS: Vec<String> = Vec::new();
-
-        let is_test_mode = lib::is_test_mode(&ARGS, NUMBER_PARAMS_REQUIRED);
-
-        assert!(is_test_mode);
-    }
-
-    #[test]
-    fn check_for_kernel_cmdline_path() {
-        const IS_TEST_MODE: bool = false;
-        const ARGS: &Vec<String> = &Vec::new();
-        let expected: &Path = &Path::new("/proc/cmdline");
-
-        let kernel_cmdline = lib::get_kernel_cmdline(IS_TEST_MODE, &ARGS);
-
-        assert_eq!(expected, kernel_cmdline);
-    }
-
-    #[test]
-    fn check_if_is_like_kernel_name() {
-        const KERNEL_LIKE_NAME: &str = "eth123";
-
-        let is_like_kernel = lib::is_like_kernel_name(KERNEL_LIKE_NAME);
-
-        assert!(is_like_kernel);
     }
 }

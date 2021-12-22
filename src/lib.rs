@@ -3,8 +3,7 @@ use std::path::Path;
 use lazy_static::lazy_static;
 use regex::Regex;
 
-/* Check if new devname is equal to kernel standard devname (eth0, etc.)
- * If such a name is detected return true else false */
+/* Check if new devname is equal to kernel standard devname (eth0, etc.) */
 pub fn is_like_kernel_name(new_devname: &str) -> bool {
     lazy_static! {
         /* Check if new devname is equal to kernel standard devname (eth0, etc.)
@@ -17,7 +16,6 @@ pub fn is_like_kernel_name(new_devname: &str) -> bool {
         static ref IS_NEW_DEVNAME_ETH_LIKE: Regex = Regex::new(r"^eth\d+$").unwrap();
     }
 
-    /* Look for HWADDR= */
     if IS_NEW_DEVNAME_ETH_LIKE.is_match(&new_devname) {
         true
     } else {
@@ -43,4 +41,42 @@ pub fn get_kernel_cmdline(is_test_mode: bool, args: &Vec<String>) -> &Path {
     };
 
     kernel_cmdline
+}
+
+#[cfg(test)]
+pub mod should {
+    use super::*;
+
+    use std::path::Path;
+
+    #[test]
+    #[should_panic]
+    fn check_for_test_mode() {
+        const NUMBER_PARAMS_REQUIRED: usize = 3;
+        const ARGS: Vec<String> = Vec::new();
+
+        let is_test_mode = is_test_mode(&ARGS, NUMBER_PARAMS_REQUIRED);
+
+        assert!(is_test_mode);
+    }
+
+    #[test]
+    fn check_for_kernel_cmdline_path() {
+        const IS_TEST_MODE: bool = false;
+        const ARGS: &Vec<String> = &Vec::new();
+        let expected: &Path = &Path::new("/proc/cmdline");
+
+        let kernel_cmdline = get_kernel_cmdline(IS_TEST_MODE, &ARGS);
+
+        assert_eq!(expected, kernel_cmdline);
+    }
+
+    #[test]
+    fn check_if_is_like_kernel_name() {
+        const KERNEL_LIKE_NAME: &str = "eth123";
+
+        let is_like_kernel = is_like_kernel_name(KERNEL_LIKE_NAME);
+
+        assert!(is_like_kernel);
+    }
 }
