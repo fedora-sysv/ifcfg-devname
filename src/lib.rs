@@ -5,8 +5,6 @@ use regex::Regex;
 
 /* Check if new devname is equal to kernel standard devname (eth0, etc.)
  * If such a name is detected return true else false */
-// TODO: Fix this!
-#[allow(dead_code)]
 pub fn is_like_kernel_name(new_devname: &str) -> bool {
     lazy_static! {
         /* Check if new devname is equal to kernel standard devname (eth0, etc.)
@@ -35,8 +33,6 @@ pub fn is_test_mode(params: &Vec<String>, number_params_required: usize) -> bool
     }
 }
 
-// TODO: Fix this!
-#[allow(dead_code)]
 pub fn get_kernel_cmdline(is_test_mode: bool, args: &Vec<String>) -> &Path {
     const KERNEL_CMDLINE: &str = "/proc/cmdline";
 

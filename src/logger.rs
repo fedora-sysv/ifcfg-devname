@@ -29,3 +29,17 @@ fn setup_syslog(logger: Logger<LoggerBackend, Formatter3164>) {
 fn setup_stderr_logging() {
     stderrlog::new().module(module_path!()).init().unwrap();
 }
+
+#[cfg(test)]
+pub mod should {
+    use super::*;
+
+    // Required by setup_stderr_logging() 
+    #[allow(unused_imports)]
+    use log::*;
+
+    #[test]
+    fn setup_stderr_logger() {
+        setup_stderr_logging();
+    }
+}

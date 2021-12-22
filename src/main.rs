@@ -1,12 +1,11 @@
-#[macro_use]
-extern crate log;
-
 use std::env;
 use std::error;
 use std::path::Path;
 use std::str::FromStr;
 
 use mac_address::{mac_address_by_name, MacAddress};
+
+use log::*;
 
 mod lib;
 mod logger;
