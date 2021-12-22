@@ -36,9 +36,6 @@ struct DatasetOutput {
     expected_name: String
 }
 
-
-// --- Integration test --- //
-
 #[test]
 fn integration_test() -> Result<(), Box<dyn std::error::Error>> {
     let data_dir = Path::new("./tests/integration_test_data");

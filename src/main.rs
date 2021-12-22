@@ -9,7 +9,7 @@ use log::*;
 
 mod lib;
 mod logger;
-mod parse;
+mod parser;
 mod scanner;
 
 fn main() -> Result<(), Box<dyn error::Error>> {
@@ -50,7 +50,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
      * as they are documented in dracut.cmdline(7)
      * Example: ifname=test:aa:bb:cc:dd:ee:ff
      */
-    let mut device_config_name = match parse::kernel_cmdline(&simple_mac_address, kernel_cmdline) {
+    let mut device_config_name = match parser::kernel_cmdline(&simple_mac_address, kernel_cmdline) {
         Ok(Some(name)) => {
             if lib::is_like_kernel_name(&name) {
                 warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
@@ -79,7 +79,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         for path in ifcfg_paths {
             let config_file_path: &Path = Path::new(&path);
 
-            match parse::config_file(config_file_path, &simple_mac_address) {
+            match parser::config_file(config_file_path, &simple_mac_address) {
                 Ok(Some(name)) => {
                     if lib::is_like_kernel_name(&name) {
                         warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
@@ -100,6 +100,3 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         std::process::exit(1);
     }
 }
-
-#[cfg(test)]
-mod unit_test;
