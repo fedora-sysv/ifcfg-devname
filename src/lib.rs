@@ -28,7 +28,7 @@ pub fn is_like_kernel_name(new_devname: &str) -> bool {
 }
 
 pub fn is_test_mode(params: &Vec<String>, number_params_required: usize) -> bool {
-    if params.len() > number_params_required {
+    if params.len() >= number_params_required {
         true
     } else {
         false

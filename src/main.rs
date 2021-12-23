@@ -12,16 +12,16 @@ mod scanner;
 enum Args {
     KernelCmdline = 1,
     ConfigDir,
-    Mac
+    Mac,
+    Length
 }
 
 fn main() -> Result<(), Box<dyn error::Error>> {
     const ENV: &str = "INTERFACE";
     const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
-    const TEST_MODE_PARAMS_REQUIRED: usize = 3;
 
     let args: Vec<String> = env::args().collect();
-    let is_test_mode = lib::is_test_mode(&args, TEST_MODE_PARAMS_REQUIRED);
+    let is_test_mode = lib::is_test_mode(&args, Args::Length as usize);
 
     logger::init();
 
@@ -45,10 +45,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     let kernel_cmdline = lib::get_kernel_cmdline(is_test_mode, &args, Args::KernelCmdline as usize);
 
-    /* Let's check kernel cmdline and also process ifname= entries
-     * as they are documented in dracut.cmdline(7)
-     * Example: ifname=test:aa:bb:cc:dd:ee:ff
-     */
+    /* Check kernel cmdline and also process ifname= entries */
     let mut device_config_name = match parser::kernel_cmdline(&simple_mac_address, kernel_cmdline) {
         Ok(Some(name)) => {
             if lib::is_like_kernel_name(&name) {
@@ -63,7 +60,11 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     };
 
     if device_config_name.is_empty() {
-        let config_dir = if !is_test_mode { CONFIG_DIR } else { &args[Args::ConfigDir as usize] };
+        let config_dir = if !is_test_mode {
+            CONFIG_DIR
+        } else {
+            &args[Args::ConfigDir as usize]
+        };
 
         let config_dir_path = Path::new(config_dir);
         let ifcfg_paths = match scanner::config_dir(config_dir_path) {
