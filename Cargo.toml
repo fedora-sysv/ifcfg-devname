@@ -30,9 +30,6 @@ syslog = "^6.0.1"
 log = "0.4.14"
 stderrlog = "0.5.1"
 
-# Fuzzing
-afl = { version = "*", features = ["reset_lazy_static"] }
-
 
 # integration testing
 [dev-dependencies]
@@ -44,8 +41,3 @@ predicates = "2.1.0"
 # JSON
 serde = { version = "1.0.132", features = ["derive"] }
 serde_json = "1.0.73"
-
-# lazy_static variables present problems for AFL's persistent mode, which afl.rs uses.
-# Such variables can cause AFL to give incorrectly low stability reports, or fail to report timeouts, for example.
-[patch.crates-io]
-lazy_static = { git = "https://github.com/rust-fuzz/resettable-lazy-static.rs" }
