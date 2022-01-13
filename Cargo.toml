@@ -36,7 +36,7 @@ stderrlog = "0.5.1"
 
 # command exevution
 assert_cmd = "2.0.3"
-predicates = "2.1.0"
+predicates = "2.1.1"
 
 # JSON
 serde = { version = "1.0.133", features = ["derive"] }
