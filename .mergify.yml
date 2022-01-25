@@ -1,77 +1,9 @@
+# doc: https://docs.mergify.com
+---
+
 pull_request_rules:
-  - name: Source label
-    conditions:
-      - files~=^src/ # is true if any files in the tests directory is modified
-    actions:
-      label:
-        add:
-          - source
 
-  # remove source label
-  - name: Source label - romove
-    conditions:
-      - -files~=^src/
-    actions:
-      label:
-        remove:
-          - source
-
-  - name: Test label
-    conditions:
-      - files~=^tests/ # is true if any files in the tests directory is modified
-    actions:
-      label:
-        add:
-          - tests
-
-  # remove test label
-  - name: Test label - romove
-    conditions:
-      - -files~=^test/
-    actions:
-      label:
-        remove:
-          - tests
-
-  - name: Configuration label
-    conditions:
-      - or:
-          - files~=\.yml$
-          - files~=\.json$
-    actions:
-      label:
-        add:
-          - configuration
-
-  # remove configuration label
-  - name: Configuration label - romove
-    conditions:
-      - and:
-          - -files~=\.yml$
-          - -files~=\.json$
-    actions:
-      label:
-        remove:
-          - configuration
-
-  - name: Documentation label
-    conditions:
-      - files~=\.md$
-    actions:
-      label:
-        add:
-          - documentation
-
-  # remove documentation label
-  - name: Documentation label - romove
-    conditions:
-      - -files~=\.md$
-    actions:
-      label:
-        remove:
-          - documentation
-
-  - name: Automatic merge on approval
+  - name: Automatic merge on approval & CI pass
     conditions:
       - "#approved-reviews-by>=1"
       - "#review-requested=0"
@@ -81,7 +13,162 @@ pull_request_rules:
       - check-success=Integration test coverage
       - check-success=packit/rpm-build-fedora-rawhide-x86_64
       - check-success=packit/rpm-build-centos-stream-9-x86_64
-
+      - -draft
+      - label!=dont-merge
+      - -title~=(?i)wip
+      - base=main
     actions:
       merge:
         method: rebase
+        rebase_fallback: none
+
+  - name: Automatic merge on CI pass - Dependabot
+    conditions:
+      - author~=^dependabot(|-preview)\[bot\]$
+      - "#review-requested=0"
+      - "#changes-requested-reviews-by=0"
+      - check-success=Build
+      - check-success=Unit test coverage
+      - check-success=Integration test coverage
+      - check-success=packit/rpm-build-fedora-rawhide-x86_64
+      - check-success=packit/rpm-build-centos-stream-9-x86_64
+      - -draft
+      - label!=dont-merge
+      - -title~=(?i)wip
+      - base=main
+    actions:
+      merge:
+        method: rebase
+        rebase_fallback: none
+        
+  # --- --- Labels --- --- #
+  
+  - name: Add Fedora label
+    conditions:
+      - base=main
+    actions:
+      label:
+        add:
+          - Fedora
+          
+  - name: Remove Fedora label
+    conditions:
+      - base!=main
+    actions:
+      label:
+        remove:
+          - Fedora
+          
+  # --- #
+  
+  - name: Add RHEL8 label
+    conditions:
+      - base=rhel8
+    actions:
+      label:
+        add:
+          - RHEL 8
+          
+  - name: Remove RHEL8 label
+    conditions:
+      - base!=rhel8
+    actions:
+      label:
+        remove:
+          - RHEL 8
+          
+  # --- #
+  
+  - name: Add RHEL9 label
+    conditions:
+      - base=rhel9
+    actions:
+      label:
+        add:
+          - RHEL 9
+          
+  - name: Remove RHEL9 label
+    conditions:
+      - base!=rhel9
+    actions:
+      label:
+        remove:
+          - RHEL 9
+          
+  # --- #
+
+  - name: Add source label
+    conditions:
+      - files~=^src/
+    actions:
+      label:
+        add:
+          - source
+
+  - name: Remove source label
+    conditions:
+      - -files~=^src/
+    actions:
+      label:
+        remove:
+          - source
+          
+  # --- # 
+
+  - name: Add Test label
+    conditions:
+      - files~=^tests/
+    actions:
+      label:
+        add:
+          - tests
+
+  - name: Remove test label
+    conditions:
+      - -files~=^test/
+    actions:
+      label:
+        remove:
+          - tests
+          
+  # --- #
+
+  - name: Add configuration label
+    conditions:
+      - or:
+          - files~=\.yml$
+          - files~=\.json$
+          - files~=\.toml$
+    actions:
+      label:
+        add:
+          - configuration
+
+  - name: Remove configuration label
+    conditions:
+      - and:
+          - -files~=\.yml$
+          - -files~=\.json$
+          - -files~=\.toml$
+    actions:
+      label:
+        remove:
+          - configuration
+          
+  # --- #
+
+  - name: Add documentation label
+    conditions:
+      - files~=\.md$
+    actions:
+      label:
+        add:
+          - documentation
+
+  - name: Remove documentation label
+    conditions:
+      - -files~=\.md$
+    actions:
+      label:
+        remove:
+          - documentation
