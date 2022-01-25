@@ -207,9 +207,9 @@ dependencies = [
 
 [[package]]
 name = "mac_address"
-version = "1.1.2"
+version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89544d9544366f6cda81244514a80809b137b5a179947b73bfa9f2797480de69"
+checksum = "df1d1bc1084549d60725ccc53a2bfa07f67fe4689fda07b05a36531f2988104a"
 dependencies = [
  "nix",
  "winapi",
@@ -238,9 +238,9 @@ dependencies = [
 
 [[package]]
 name = "nix"
-version = "0.22.1"
+version = "0.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7555d6c7164cc913be1ce7f95cbecdabda61eb2ccd89008524af306fb7f5031"
+checksum = "9f866317acbd3a240710c63f065ffb1e4fd466259045ccb504130b7f668f35c6"
 dependencies = [
  "bitflags",
  "cc",
