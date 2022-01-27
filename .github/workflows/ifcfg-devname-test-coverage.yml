@@ -6,7 +6,7 @@ on:
     branches:
       - main
 
-name: Build and Test Coverage
+name: Build and Coverage
 env:
   PROJECT_NAME_UNDERSCORE: ifcfg_devname
   CARGO_INCREMENTAL: 0
@@ -16,7 +16,7 @@ env:
 
 jobs:
   build:
-    name: Build
+    name: Build and Test Coverage
     runs-on: ubuntu-latest
     
     steps:
@@ -31,7 +31,6 @@ jobs:
       - name: Compile ifcfg-devname
         run: cargo build
 
-      # improve performace of workflow
       - name: Cache dependencies
         uses: actions/cache@v2
         with:
@@ -44,86 +43,31 @@ jobs:
             target
           key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ hashFiles('Cargo.lock') }}
 
-  unit-test-coverage:
-    name: Unit test coverage
-    needs: build
-    runs-on: ubuntu-latest
+      - name: Install coverage dependencies
+        run: cargo install cargo2junit grcov
 
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-
-      # improve performace of workflow
-      - name: Cache dependencies
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/.crates.toml
-            ~/.cargo/.crates2.json
-            ~/.cargo/bin
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
-            target
-          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ hashFiles('Cargo.lock') }}
-
-      # use cargo test --bins to run only unit tests
-      - name: Generate test result and coverage report
+      - name: Unit Test coverage report
         run: |
-          cargo install cargo2junit grcov;
           cargo test --bins $CARGO_OPTIONS -- -Z unstable-options --format json | cargo2junit > results.xml;
           zip -0 ccov.zip `find . \( -name "$PROJECT_NAME_UNDERSCORE*.gc*" \) -print`;
-          grcov ccov.zip -s . -t lcov --llvm --ignore-not-existing --ignore "/*" --ignore "tests/*" -o lcov.info;
+          grcov ccov.zip -s . -t lcov --llvm --ignore-not-existing --ignore "/*" --ignore "tests/*" -o lcov-unit.info;
 
-      - name: Upload to CodeCov
-        uses: codecov/codecov-action@v1
+      - name: Integration Test coverage report
+        run: |
+          cargo test integration_test $CARGO_OPTIONS -- -Z unstable-options --format json | cargo2junit > results.xml;
+          zip -0 ccov.zip `find . \( -name "$PROJECT_NAME_UNDERSCORE*.gc*" \) -print`;
+          grcov ccov.zip -s . -t lcov --llvm --ignore-not-existing --ignore "/*" --ignore "tests/*" -o lcov-integration.info;
+
+      - name: CodeCov - Unit
+        uses: codecov/codecov-action@v2
         with:
-          files: ./lcov.info
+          files: ./lcov-unit.info
           flags: unit
           fail_ci_if_error: false
 
-  integration-test-coverage:
-    name: Integration test coverage
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions-rs/toolchain@v1
+      - name: CodeCov - Integration
+        uses: codecov/codecov-action@v2
         with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-
-      # improve performace of workflow
-      - name: Cache dependencies
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/.crates.toml
-            ~/.cargo/.crates2.json
-            ~/.cargo/bin
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
-            target
-          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ hashFiles('Cargo.lock') }}
-
-      # run only integration_test
-      - name: unit - Generate test result and coverage report
-        run: |
-          cargo install cargo2junit grcov;
-          cargo test integration_test $CARGO_OPTIONS -- -Z unstable-options --format json | cargo2junit > results.xml;
-          zip -0 ccov.zip `find . \( -name "$PROJECT_NAME_UNDERSCORE*.gc*" \) -print`;
-          grcov ccov.zip -s . -t lcov --llvm --ignore-not-existing --ignore "/*" --ignore "tests/*" -o lcov.info;
-
-      - name: Upload to CodeCov
-        uses: codecov/codecov-action@v1
-        with:
-          files: ./lcov.info
+          files: ./lcov-integration.info
           flags: integration
           fail_ci_if_error: false
