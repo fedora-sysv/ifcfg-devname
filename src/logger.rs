@@ -44,6 +44,7 @@ pub mod should {
     }
 
     #[test]
+    #[ignore]
     fn connect_to_syslog() {
         connect_syslog().unwrap();
     }
