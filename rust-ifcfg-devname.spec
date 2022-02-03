@@ -4,7 +4,7 @@
 %global crate ifcfg-devname
 
 Name:           rust-%{crate}
-Version:        0.1.4
+Version:        1.0.0
 Release:        %autorelease
 Summary:        Udev helper utility that provides network interface naming using kernel cmdline and ifcfg configuration
 
