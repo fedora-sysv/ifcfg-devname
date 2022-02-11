@@ -6,7 +6,7 @@
 Name:           rust-%{crate}
 Version:        1.0.0
 Release:        %autorelease
-Summary:        Udev helper utility that provides network interface naming using kernel cmdline and ifcfg configuration
+Summary:        Udev helper utility that provides network interface naming
 
 # Upstream license specification: GPL-3.0
 License:        GPLv3
