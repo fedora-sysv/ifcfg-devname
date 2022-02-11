@@ -18,4 +18,4 @@ jobs:
           toolchain: stable
 
       - name: Upload
-        run: cargo publish --token ${{ env.CARGO_TOKEN }}
+        run: cargo publish --token ${{ secrets.CARGO_TOKEN }}
