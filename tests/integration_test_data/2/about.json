@@ -1,13 +1,13 @@
 {
-    "name": "[dataset 2] - ifcfg - should PASS",
-    "description": "",
+  "name": "[dataset 2] - test ifcfg - should PASS",
+  "description": "",
 
-    "input": {
-        "interface": "dataset_2_if",
-        "hw_address": "AA:BB:CC:DD:EE:F2"
-    },
-    "output": {
-        "should_fail": false,
-        "expected_name": "dataset_2" 
-    }
+  "input": {
+    "interface": "dataset_2_if",
+    "hw_address": "AA:BB:CC:DD:EE:F2"
+  },
+  "output": {
+    "should_fail": false,
+    "expected_name": "dataset_2"
+  }
 }

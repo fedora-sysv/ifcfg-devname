@@ -1,13 +1,13 @@
 {
-    "name": "[dataset 5] - missing configuration (cmdline and ifcfg) - should FAIL",
-    "description": "",
+  "name": "[dataset 5] - comments (`#`) in ifcfg files - should FAIL",
+  "description": "",
 
-    "input": {
-        "interface": "dataset_5_if",
-        "hw_address": "AA:BB:CC:DD:EE:F5"
-    },
-    "output": {
-        "should_fail": true,
-        "expected_name": "dataset_5" 
-    }
+  "input": {
+    "interface": "dataset_5_if",
+    "hw_address": "AA:BB:CC:DD:EE:F5"
+  },
+  "output": {
+    "should_fail": true,
+    "expected_name": "dataset_5"
+  }
 }

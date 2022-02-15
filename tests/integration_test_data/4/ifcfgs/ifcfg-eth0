@@ -1,8 +1,8 @@
 # Example ifcfg config
-DEVICE=some_if
+  DEVICE=some_if
 BOOTPROTO=none
 ONBOOT=yes
 NETMASK=255.255.255.0
 IPADDR=10.0.1.27
-HWADDR=AA:BB:CC:DD:EE:FA
+    HWADDR=AA:BB:CC:DD:EE:FA
 USERCTL=no

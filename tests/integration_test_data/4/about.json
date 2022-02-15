@@ -1,13 +1,13 @@
 {
-    "name": "[dataset 4] - missing configuration (ifcfg) - should FAIL",
-    "description": "",
+  "name": "[dataset 4] - whitespaces in ifcfg - should PASS",
+  "description": "",
 
-    "input": {
-        "interface": "dataset_4_if",
-        "hw_address": "AA:BB:CC:DD:EE:F4"
-    },
-    "output": {
-        "should_fail": true,
-        "expected_name": "dataset_4" 
-    }
+  "input": {
+    "interface": "dataset_4_if",
+    "hw_address": "AA:BB:CC:DD:EE:F4"
+  },
+  "output": {
+    "should_fail": false,
+    "expected_name": "dataset_4"
+  }
 }

@@ -1,8 +1,0 @@
-# Example ifcfg config
- DEVICE=dataset_6
-BOOTPROTO=none
-ONBOOT=yes
-NETMASK=255.255.255.0
-IPADDR=10.0.1.27
- HWADDR=AA:BB:CC:DD:EE:F6
-USERCTL=no
