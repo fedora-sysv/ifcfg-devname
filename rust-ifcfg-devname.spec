@@ -18,8 +18,7 @@ ExclusiveArch:  %{rust_arches}
 BuildRequires:  rust-packaging
 
 %global _description %{expand:
-Udev helper utility that provides network interface naming using kernel cmdline
-and ifcfg configuration.}
+Udev helper utility that provides network interface naming using ifcfg configuration.}
 
 %description %{_description}
 
