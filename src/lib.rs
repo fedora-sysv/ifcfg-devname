@@ -35,18 +35,6 @@ pub fn is_test_mode(params: &Vec<String>, number_params_required: usize) -> bool
     }
 }
 
-pub fn get_kernel_cmdline(is_test_mode: bool, args: &Vec<String>, index: usize) -> &Path {
-    const KERNEL_CMDLINE: &str = "/proc/cmdline";
-
-    let kernel_cmdline = if is_test_mode {
-        Path::new(&args[index])
-    } else {
-        Path::new(KERNEL_CMDLINE)
-    };
-
-    kernel_cmdline
-}
-
 pub fn get_mac_address(is_test_mode: bool, args: &Vec<String>, index: usize, kernel_name: &String) -> Result<MacAddress, Box<dyn error::Error>> {
     let mac_address = if is_test_mode {
         let mac_address = args[index].clone();

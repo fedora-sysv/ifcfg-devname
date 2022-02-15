@@ -12,57 +12,6 @@ use regex::Regex;
  * https://doc.rust-lang.org/std/keyword.dyn.html */
 type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
 
-/* Scan kernel cmdline and look for given hardware address and return new device name */
-#[allow(unused)]
-pub fn kernel_cmdline(mac_address: &str, kernel_cmdline_path: &Path) -> Result<Option<String>> {
-    let file = File::open(kernel_cmdline_path)?;
-    let mut reader = BufReader::new(file);
-    let mut hwaddr: Option<MacAddress> = None;
-    let mut device: Option<String> = None;
-    let mut kernel_cmdline = String::new();
-
-    lazy_static! {
-        /* Look for patterns like this ifname=new_name:aa:BB:CC:DD:ee:ff at kernel command line
-         * regex: ifname=(\S[^:]{0,14}):(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))
-         * ifname=(group1):(group2) - look for pattern starting with `ifname=` following with two groups separated with `:` character
-         * group1: (\S[^:]{0,14}) - match non-whitespace characters ; minimum 1 and maximum 15 ; do not match `:` character
-         * group2: (([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})) - match 48-bit hw address expressed in hexadecimal system ; each of inner 8-bits are separated with `:` character ; case insensitive
-         * example: ifname=new-devname007:00:1b:44:11:3A:B7
-         *                 ^^^^^^^^^^^^^^ ~~~~~~~~~~~~~~~~~
-         *                 new dev name   hw address of if */
-        static ref REGEX_DEVICE_HWADDR_PAIR: Regex = Regex::new(r"ifname=(\S[^:]{0,14}):(([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}))").unwrap();
-    }
-
-    /* Read kernel command line and look for ifname= */
-    reader.read_line(&mut kernel_cmdline)?;
-
-    /* Look for ifname= */
-    if REGEX_DEVICE_HWADDR_PAIR.is_match(&kernel_cmdline) {
-        for capture in REGEX_DEVICE_HWADDR_PAIR.captures_iter(&kernel_cmdline) {
-            device = Some(capture[1].parse()?);
-            hwaddr = Some(capture[2].parse()?);
-            /* Check MAC */
-            if hwaddr
-                .unwrap()
-                .to_string()
-                .to_owned()
-                .to_lowercase()
-                .eq(mac_address)
-            {
-                break;
-            } else {
-                device = None;
-            }
-        }
-    }
-
-    /* When MAC doesn't match it returns OK(None) */
-    match device {
-        Some(_) => Ok(device),
-        None => Err("new device name not found".into()),
-    }
-}
-
 /* Scan ifcfg files and look for given HWADDR and return DEVICE name */
 pub fn config_file(config_file: &Path, mac_address: &str) -> Result<Option<String>> {
     let file = File::open(config_file)?;
