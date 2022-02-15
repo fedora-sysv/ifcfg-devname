@@ -76,40 +76,6 @@ pub mod should {
     use std::str::FromStr;
 
     const TEST_CONFIG_DIR: &str = "./tests/unit_test_data/ifcfgs";
-    const TEST_KERNEL_CMDLINE_DIR: &str = "./tests/unit_test_data/cmdlines";
-
-    #[test]
-    fn parse_cmdline() {
-        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:1F")
-            .unwrap()
-            .to_string()
-            .to_lowercase();
-        let kernel_cmdline_path = Path::new(TEST_KERNEL_CMDLINE_DIR).join("1_should_pass");
-
-        let device_config_name = match kernel_cmdline(&mac_address, &kernel_cmdline_path) {
-            Ok(Some(name)) => name,
-            _ => String::from(""),
-        };
-
-        assert_eq!("unit_test_1", device_config_name);
-    }
-
-    #[test]
-    #[should_panic]
-    fn not_parse_cmdline() {
-        let mac_address = MacAddress::from_str("AA:BB:CC:DD:EE:2F")
-            .unwrap()
-            .to_string()
-            .to_lowercase();
-        let kernel_cmdline_path = Path::new(TEST_KERNEL_CMDLINE_DIR).join("2_should_fail");
-
-        let device_config_name = match kernel_cmdline(&mac_address, &kernel_cmdline_path) {
-            Ok(Some(name)) => name,
-            _ => String::from(""),
-        };
-
-        assert_eq!("unit_test_2", device_config_name);
-    }
 
     #[test]
     fn parse_ifcfg_configuration() {

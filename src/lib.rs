@@ -1,4 +1,3 @@
-use std::path::Path;
 use std::error;
 use std::str::FromStr;
 
@@ -62,18 +61,6 @@ pub mod should {
         let is_test_mode = is_test_mode(&ARGS, NUMBER_PARAMS_REQUIRED);
 
         assert!(is_test_mode);
-    }
-
-    #[test]
-    fn check_for_kernel_cmdline_path() {
-        const IS_TEST_MODE: bool = false;
-        const ARGS: &Vec<String> = &Vec::new();
-        const INDEX: usize = 1;
-        let expected: &Path = &Path::new("/proc/cmdline");
-
-        let kernel_cmdline = get_kernel_cmdline(IS_TEST_MODE, ARGS, INDEX);
-
-        assert_eq!(expected, kernel_cmdline);
     }
 
     #[test]
