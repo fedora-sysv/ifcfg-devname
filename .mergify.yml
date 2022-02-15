@@ -125,7 +125,7 @@ pull_request_rules:
 
   - name: Remove test label
     conditions:
-      - -files~=^test/
+      - -files~=^tests/
     actions:
       label:
         remove:
