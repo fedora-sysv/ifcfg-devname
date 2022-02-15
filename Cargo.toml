@@ -10,7 +10,7 @@ exclude = ["./.codecov.yml", "./mergify.yml", "/target/*", "/.github/*"]
 
 keywords = ["ifcfg", "udev"]
 categories = []
-description = "Udev helper utility that provides network interface naming using kernel cmdline and ifcfg configuration"
+description = "Udev helper utility that provides network interface naming"
 readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
