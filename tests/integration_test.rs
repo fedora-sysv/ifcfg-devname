@@ -49,7 +49,6 @@ fn integration_test() -> Result<(), Box<dyn std::error::Error>> {
             let mut cmd = Command::cargo_bin("ifcfg-devname")?;
             
             let config_path = path.join("about.json");
-            let cmdline_path = path.join("cmdline");
             let ifcfgs_dir_path = path.join("ifcfgs");
 
             /* Read JSON configuration and then serialize it using srade_json */
@@ -61,7 +60,6 @@ fn integration_test() -> Result<(), Box<dyn std::error::Error>> {
             let dataset_assert = cmd
                 .env("INTERFACE", dataset_configuration.input.interface)
                 .args(&[
-                    cmdline_path.into_os_string().into_string().unwrap(),       /* kernel cmdline */
                     ifcfgs_dir_path.into_os_string().into_string().unwrap(),    /* ifcfgs directory */
                     dataset_configuration.input.hw_address                      /* hw address */
                 ])
