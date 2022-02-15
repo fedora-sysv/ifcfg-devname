@@ -1,13 +1,13 @@
 {
-    "name": "[dataset 1] - kernel cmdline - should PASS",
-    "description": "",
+  "name": "[dataset 1] - missing configuration (ifcfg) - should FAIL",
+  "description": "",
 
-    "input": {
-        "interface": "dataset_1_if",
-        "hw_address": "AA:BB:CC:DD:EE:F1"
-    },
-    "output": {
-        "should_fail": false,
-        "expected_name": "dataset_1" 
-    }
+  "input": {
+    "interface": "dataset_1_if",
+    "hw_address": "AA:BB:CC:DD:EE:F1"
+  },
+  "output": {
+    "should_fail": true,
+    "expected_name": "dataset_1"
+  }
 }
