@@ -13,7 +13,7 @@ Program `ifcfg-devname` reads ENV **INTERFACE**, which is expected to contain th
 
 This repository provides source code for `ifcfg-devname` binary. The binary requires env **INTERFACE** to be set.
 
-```
+```sh
 INTERFACE=eth0 cargo run --release
 ```
 
@@ -21,6 +21,6 @@ Environment variable **INTERFACE** takes name of the interface.
 
 If you wish to run integration tests and unit tests, you can do so by:
 
-```
+```sh
 cargo test
 ```
