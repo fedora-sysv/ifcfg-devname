@@ -148,7 +148,7 @@ dependencies = [
 
 [[package]]
 name = "ifcfg-devname"
-version = "1.0.1"
+version = "1.1.0"
 dependencies = [
  "assert_cmd",
  "glob",
