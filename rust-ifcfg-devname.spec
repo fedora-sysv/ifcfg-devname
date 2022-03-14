@@ -24,7 +24,7 @@ Udev helper utility that provides network interface naming using ifcfg configura
 
 %package     -n %{crate}
 Summary:        %{summary}
-License:        GPLv3 or ASL 2.0 or MIT
+License:        GPLv3 and MIT
 
 %description -n %{crate} %{_description}
 
