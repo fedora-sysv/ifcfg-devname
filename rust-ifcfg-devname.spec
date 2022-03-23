@@ -31,7 +31,9 @@ License:        GPL-3.0-or-later and MIT
 %files       -n %{crate}
 %license LICENSE
 %doc README.md
+
 %{_bindir}/ifcfg-devname
+%{_udevrulesdir}/60-net.rules
 
 %package        devel
 Summary:        %{summary}
@@ -71,6 +73,8 @@ use the "default" feature of the "%{crate}" crate.
 
 %install
 %cargo_install
+
+install -m 0755 -d $(DESTDIR)$(libdir)/udev
 
 %if %{with check}
 %check

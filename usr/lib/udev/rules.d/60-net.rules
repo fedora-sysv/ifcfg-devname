@@ -1,0 +1,1 @@
+ACTION=="add", SUBSYSTEM=="net", DRIVERS=="?*", ATTR{type}=="1", PROGRAM="/usr/bin/ifcfg-devname", RESULT=="?*", NAME="$result"
