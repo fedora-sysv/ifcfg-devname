@@ -1,12 +1,16 @@
+---
 # Original source code: https://github.com/BamPeers/rust-ci-github-actions-workflow/blob/main/.github/workflows/test.yaml
 
+name: Build and Coverage
 on:
   pull_request:
   push:
     branches:
       - main
 
-name: Build and Coverage
+permissions:
+  contents: read
+
 env:
   PROJECT_NAME_UNDERSCORE: ifcfg_devname
   CARGO_INCREMENTAL: 0
@@ -18,7 +22,7 @@ jobs:
   build:
     name: Build and Test Coverage
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v2
 
@@ -48,15 +52,19 @@ jobs:
 
       - name: Unit Test coverage report
         run: |
-          cargo test --bins $CARGO_OPTIONS -- -Z unstable-options --format json | cargo2junit > results.xml;
-          zip -0 ccov.zip `find . \( -name "$PROJECT_NAME_UNDERSCORE*.gc*" \) -print`;
-          grcov ccov.zip -s . -t lcov --llvm --ignore-not-existing --ignore "/*" --ignore "tests/*" -o lcov-unit.info;
+          # shellcheck disable=SC2086
+          cargo test --bins $CARGO_OPTIONS -- -Z unstable-options --format json | cargo2junit > results.xml
+          # shellcheck disable=SC2046
+          zip -0 ccov.zip $(find . \( -name "$PROJECT_NAME_UNDERSCORE*.gc*" \) -print)
+          grcov ccov.zip -s . -t lcov --llvm --ignore-not-existing --ignore "/*" --ignore "tests/*" -o lcov-unit.info
 
       - name: Integration Test coverage report
         run: |
-          cargo test integration_test $CARGO_OPTIONS -- -Z unstable-options --format json | cargo2junit > results.xml;
-          zip -0 ccov.zip `find . \( -name "$PROJECT_NAME_UNDERSCORE*.gc*" \) -print`;
-          grcov ccov.zip -s . -t lcov --llvm --ignore-not-existing --ignore "/*" --ignore "tests/*" -o lcov-integration.info;
+          # shellcheck disable=SC2086
+          cargo test integration_test $CARGO_OPTIONS -- -Z unstable-options --format json | cargo2junit > results.xml
+          # shellcheck disable=SC2046
+          zip -0 ccov.zip $(find . \( -name "$PROJECT_NAME_UNDERSCORE*.gc*" \) -print)
+          grcov ccov.zip -s . -t lcov --llvm --ignore-not-existing --ignore "/*" --ignore "tests/*" -o lcov-integration.info
 
       - name: CodeCov - Unit
         uses: codecov/codecov-action@v2

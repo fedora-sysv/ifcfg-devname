@@ -1,6 +1,6 @@
 # ifcfg-devname
 
-[![Crates.io](https://img.shields.io/crates/v/ifcfg-devname.svg)](https://crates.io/crates/ifcfg-devname) [![Build and Coverage](https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/ifcfg-devname-test-coverage.yml/badge.svg)](https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/ifcfg-devname-test-coverage.yml) [![codecov](https://codecov.io/gh/fedora-sysv/ifcfg-devname/branch/main/graph/badge.svg)](https://codecov.io/gh/fedora-sysv/ifcfg-devname) [![Mergify Status][mergify-status]][mergify]
+[![Crates.io](https://img.shields.io/crates/v/ifcfg-devname.svg)](https://crates.io/crates/ifcfg-devname) [![Build and Coverage](https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/ifcfg-devname-test-coverage.yml/badge.svg)](https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/ifcfg-devname-test-coverage.yml) [![Lint Code Base](https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/linter.yml/badge.svg)](https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/linter.yml) [![codecov](https://codecov.io/gh/fedora-sysv/ifcfg-devname/branch/main/graph/badge.svg)](https://codecov.io/gh/fedora-sysv/ifcfg-devname) [![Mergify Status][mergify-status]][mergify]
 
 [mergify]: https://mergify.io
 [mergify-status]: https://img.shields.io/endpoint.svg?url=https://dashboard.mergify.io/badges/fedora-sysv/ifcfg-devname&style=flat
