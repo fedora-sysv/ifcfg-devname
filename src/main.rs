@@ -12,7 +12,7 @@ mod scanner;
 enum Args {
     ConfigDir = 1,
     Mac,
-    Length
+    Length,
 }
 
 fn main() -> Result<(), Box<dyn error::Error>> {
@@ -32,7 +32,12 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         }
     };
 
-    let mac_address = match lib::get_mac_address(is_test_mode, &args, Args::Mac as usize, &kernel_interface_name) {
+    let mac_address = match lib::get_mac_address(
+        is_test_mode,
+        &args,
+        Args::Mac as usize,
+        &kernel_interface_name,
+    ) {
         Ok(val) => val,
         _ => {
             error!("Fail to resolve MAC address of '{}'", kernel_interface_name);
@@ -52,13 +57,16 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let ifcfg_paths = match scanner::config_dir(config_dir_path) {
         Some(val) => val,
         None => {
-            error!("Fail to get list of ifcfg files from directory {}", config_dir);
+            error!(
+                "Fail to get list of ifcfg files from directory {}",
+                config_dir
+            );
             std::process::exit(1)
         }
     };
 
     let mut device_config_name = String::new();
-    
+
     for path in ifcfg_paths {
         let config_file_path: &Path = Path::new(&path);
 
