@@ -1,6 +1,18 @@
 # ifcfg-devname
 
-[![Crates.io](https://img.shields.io/crates/v/ifcfg-devname.svg)](https://crates.io/crates/ifcfg-devname) [![Build and Coverage](https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/ifcfg-devname-test-coverage.yml/badge.svg)](https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/ifcfg-devname-test-coverage.yml) [![Lint Code Base](https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/linter.yml/badge.svg)](https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/linter.yml) [![codecov](https://codecov.io/gh/fedora-sysv/ifcfg-devname/branch/main/graph/badge.svg)](https://codecov.io/gh/fedora-sysv/ifcfg-devname) [![Mergify Status][mergify-status]][mergify]
+[![Crates.io][crates-status]][crates] [![Build and Coverage][build-status]][build] [![Lint Code Base][lint-status]][lint] [![codecov][coverage-status]][coverage] [![Mergify Status][mergify-status]][mergify]
+
+[crates]: https://crates.io/crates/ifcfg-devname
+[crates-status]: https://img.shields.io/crates/v/ifcfg-devname.svg
+
+[build]: https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/test.yml
+[build-status]: https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/test.yml/badge.svg
+
+[lint]: https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/linter.yml
+[lint-status]: https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/linter.yml/badge.svg
+
+[coverage]: https://codecov.io/gh/fedora-sysv/ifcfg-devname
+[coverage-status]: https://codecov.io/gh/fedora-sysv/ifcfg-devname/branch/main/graph/badge.svg
 
 [mergify]: https://mergify.io
 [mergify-status]: https://img.shields.io/endpoint.svg?url=https://dashboard.mergify.io/badges/fedora-sysv/ifcfg-devname&style=flat
@@ -18,9 +30,3 @@ INTERFACE=eth0 cargo run --release
 ```
 
 Environment variable **INTERFACE** takes name of the interface.
-
-If you wish to run integration tests and unit tests, you can do so by:
-
-```sh
-cargo test
-```
