@@ -34,7 +34,7 @@ fn setup_stderr_logging() {
 pub mod should {
     use super::*;
 
-    // Required by setup_stderr_logging() 
+    // Required by setup_stderr_logging()
     #[allow(unused_imports)]
     use log::*;
 
