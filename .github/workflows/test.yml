@@ -67,14 +67,14 @@ jobs:
           grcov ccov.zip -s . -t lcov --llvm --ignore-not-existing --ignore "/*" --ignore "tests/*" -o lcov-integration.info
 
       - name: CodeCov - Unit
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           files: ./lcov-unit.info
           flags: unit
           fail_ci_if_error: false
 
       - name: CodeCov - Integration
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           files: ./lcov-integration.info
           flags: integration
