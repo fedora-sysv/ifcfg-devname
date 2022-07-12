@@ -75,7 +75,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
                 if lib::is_like_kernel_name(&name) {
                     warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
                 }
-                device_config_name = format!("{}", name);
+                device_config_name = name;
                 break;
             }
             _ => continue,

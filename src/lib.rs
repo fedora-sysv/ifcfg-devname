@@ -19,26 +19,18 @@ pub fn is_like_kernel_name(new_devname: &str) -> bool {
         static ref IS_NEW_DEVNAME_ETH_LIKE: Regex = Regex::new(r"^eth\d+$").unwrap();
     }
 
-    if IS_NEW_DEVNAME_ETH_LIKE.is_match(&new_devname) {
-        true
-    } else {
-        false
-    }
+    IS_NEW_DEVNAME_ETH_LIKE.is_match(new_devname)
 }
 
 pub fn is_test_mode(params: &Vec<String>, number_params_required: usize) -> bool {
-    if params.len() >= number_params_required {
-        true
-    } else {
-        false
-    }
+    params.len() >= number_params_required
 }
 
 pub fn get_mac_address(
     is_test_mode: bool,
-    args: &Vec<String>,
+    args: &[String],
     index: usize,
-    kernel_name: &String,
+    kernel_name: &str,
 ) -> Result<MacAddress, Box<dyn error::Error>> {
     let mac_address = if is_test_mode {
         let mac_address = args[index].clone();

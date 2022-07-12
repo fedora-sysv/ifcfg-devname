@@ -58,8 +58,8 @@ pub fn config_file(config_file: &Path, mac_address: &str) -> Result<Option<Strin
         }
     }
 
-    if hwaddr.is_some() {
-        if hwaddr.unwrap().to_string().to_lowercase().ne(mac_address) {
+    if let Some(mac) = hwaddr {
+        if mac.to_string().to_lowercase().ne(mac_address) {
             Err("new device name not found".into())
         } else {
             Ok(device)
