@@ -24,10 +24,10 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     logger::init();
 
-    let kernel_interface_name = match env::var_os(ENV).unwrap().into_string() {
-        Ok(val) => val,
-        Err(err) => {
-            error!("Fail obtaining ENV {} - {}", ENV, err.to_string_lossy());
+    let kernel_interface_name = match env::var_os(ENV) {
+        Some(val) => val.into_string().unwrap(),
+        None => {
+            error!("Fail to obtain environment variable '{}'", ENV);
             std::process::exit(1)
         }
     };
@@ -58,7 +58,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         Some(val) => val,
         None => {
             error!(
-                "Fail to get list of ifcfg files from directory {}",
+                "Fail to get list of ifcfg files from directory '{}'",
                 config_dir
             );
             std::process::exit(1)
