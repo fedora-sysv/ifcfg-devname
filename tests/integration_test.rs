@@ -31,7 +31,7 @@ struct DatasetOutput {
 }
 
 #[test]
-fn integration_test() -> Result<(), Box<dyn std::error::Error>> {
+fn integration_test_datasets() -> Result<(), Box<dyn std::error::Error>> {
     let data_dir = Path::new("./tests/integration_test_data");
 
     /* Loop through datasets in directory ./data */
@@ -68,6 +68,15 @@ fn integration_test() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     }
+
+    Ok(())
+}
+
+#[test]
+fn integration_test_no_env() -> Result<(), Box<dyn std::error::Error>> {
+    let mut cmd = Command::cargo_bin("ifcfg-devname")?;
+
+    cmd.assert().failure().code(1);
 
     Ok(())
 }
