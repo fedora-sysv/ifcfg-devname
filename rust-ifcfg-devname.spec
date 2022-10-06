@@ -10,12 +10,13 @@ Summary:        Udev helper utility that provides network interface naming
 
 # Upstream license specification: GPL-3.0
 License:        GPL-3.0-or-later
-URL:            https://crates.io/crates/ifcfg-devname
+URL:            https://crates.io/crates/%{crate}
 Source:         %{crates_source}
 
 ExclusiveArch:  %{rust_arches}
 
 BuildRequires:  rust-packaging
+BuildRequires:  systemd-rpm-macros
 
 %global _description %{expand:
 Udev helper utility that provides network interface naming using ifcfg configuration.}
@@ -32,7 +33,7 @@ License:        GPL-3.0-or-later and MIT
 %license LICENSE
 %doc README.md
 
-%{_bindir}/ifcfg-devname
+%{_prefix}/lib/udev/%{crate}
 %{_udevrulesdir}/60-net.rules
 
 %package        devel
@@ -72,9 +73,7 @@ use the "default" feature of the "%{crate}" crate.
 %cargo_build
 
 %install
-%cargo_install
-
-install -m 0755 -d $(DESTDIR)$(libdir)/udev
+%make_install
 
 %if %{with check}
 %check
