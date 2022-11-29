@@ -14,8 +14,8 @@
 [coverage]: https://codecov.io/gh/fedora-sysv/ifcfg-devname
 [coverage-status]: https://codecov.io/gh/fedora-sysv/ifcfg-devname/branch/main/graph/badge.svg
 
-[mergify]: https://mergify.io
-[mergify-status]: https://img.shields.io/endpoint.svg?url=https://dashboard.mergify.io/badges/fedora-sysv/ifcfg-devname&style=flat
+[mergify]: https://mergify.com
+[mergify-status]: https://img.shields.io/endpoint.svg?url=https://api.mergify.com/v1/badges/fedora-sysv/ifcfg-devname&style=flat
 
 Initscripts `rename_device` binary rewritten using rust and renamed to `ifcfg-devname`.
 
