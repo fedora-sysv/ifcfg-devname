@@ -5,8 +5,8 @@
 [crates]: https://crates.io/crates/ifcfg-devname
 [crates-status]: https://img.shields.io/crates/v/ifcfg-devname.svg
 
-[build]: https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/test.yml
-[build-status]: https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/test.yml/badge.svg
+[build]: https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/rust.yml
+[build-status]: https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/rust.yml/badge.svg
 
 [lint]: https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/linter.yml
 [lint-status]: https://github.com/fedora-sysv/ifcfg-devname/actions/workflows/linter.yml/badge.svg

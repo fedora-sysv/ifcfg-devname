@@ -1,0 +1,131 @@
+# Inspired by:
+# systemd/zram-generator CI - https://github.com/systemd/zram-generator/blob/main/.github/workflows/ci.yml
+# aufover/aufover-benchmark CI - https://github.com/aufover/aufover-benchmark/blob/main/.github/workflows/fedora.yml
+---
+
+name: Rust CI
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+  # Every Monday at 04:00 AM
+  schedule:
+    - cron: 0 4 * * 1
+
+env:
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: "[ Fedora ${{ matrix.fedora }} ] - Cargo Test ${{ matrix.coverage == true && '& Coverage ' || '' }}(rust ${{ matrix.rust }})"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [ stable, nightly ]
+        fedora: [ 36, 37, rawhide ]
+        include:
+          - rust: nightly
+            fedora: 37
+            coverage: true
+
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:${{ matrix.fedora }}
+      # Docker seccomp policy incompatible with glibc 2.34
+      # https://github.com/actions/runner-images/issues/3812
+      options: --security-opt seccomp=unconfined
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          profile: minimal
+
+      - name: Install Development Tools packages
+        # required to be able to build rust packages: Development Tools
+        # https://trendoceans.com/fix-linker-cc-not-found/
+        run: |
+          sudo dnf groupinstall -y "Development Tools"
+
+      - name: Test
+        if: ${{ matrix.coverage != true }}
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all-features --no-fail-fast
+
+      - name: Test + Coverage
+        # -Z flag is available only on rust nightly
+        if: ${{ matrix.coverage == true }}
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all-features --no-fail-fast
+        env:
+          CARGO_INCREMENTAL: '0'
+          RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
+          RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
+
+      - name: Generate coverage data
+        if: ${{ matrix.coverage == true }}
+        id: coverage
+        uses: actions-rs/grcov@v0.1
+
+      - name: CodeCov - Upload coverage data
+        if: ${{ matrix.coverage == true }}
+        uses: codecov/codecov-action@v3
+        with:
+          files: ${{ steps.coverage.outputs.report }}
+          fail_ci_if_error: false
+
+  rustfmt:
+    name: Cargo Fmt
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install latest stable rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+          components: rustfmt
+
+      - name: Check format
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: -- --check
+
+  clippy:
+    name: Cargo Clippy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install latest nightly rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          profile: minimal
+          components: clippy
+
+      - name: Run Clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- --no-deps
+
+...
