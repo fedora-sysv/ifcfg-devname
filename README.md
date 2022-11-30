@@ -1,6 +1,6 @@
 # ifcfg-devname
 
-[![Crates.io][crates-status]][crates] [![Build and Coverage][build-status]][build] [![Lint Code Base][lint-status]][lint] [![codecov][coverage-status]][coverage] [![Mergify Status][mergify-status]][mergify]
+[![Crates.io][crates-status]][crates] [![Build and Coverage][build-status]][build] [![Lint Code Base][lint-status]][lint] [![codecov][coverage-status]][coverage] ![OSSF-Scorecard Score][scorecard-status] [![Mergify Status][mergify-status]][mergify]
 
 [crates]: https://crates.io/crates/ifcfg-devname
 [crates-status]: https://img.shields.io/crates/v/ifcfg-devname.svg
@@ -13,6 +13,8 @@
 
 [coverage]: https://codecov.io/gh/fedora-sysv/ifcfg-devname
 [coverage-status]: https://codecov.io/gh/fedora-sysv/ifcfg-devname/branch/main/graph/badge.svg
+
+[scorecard-status]: https://img.shields.io/ossf-scorecard/github.com/fedora-sysv/ifcfg-devname?label=OSSF-Scorecard%20Score
 
 [mergify]: https://mergify.com
 [mergify-status]: https://img.shields.io/endpoint.svg?url=https://api.mergify.com/v1/badges/fedora-sysv/ifcfg-devname&style=flat
