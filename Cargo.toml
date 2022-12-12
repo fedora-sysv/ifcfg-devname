@@ -39,5 +39,5 @@ assert_cmd = "2.0.4"
 predicates = "2.1.1"
 
 # JSON
-serde = { version = "1.0.144", features = ["derive"] }
+serde = { version = "1.0.150", features = ["derive"] }
 serde_json = "1.0.85"
