@@ -6,6 +6,8 @@ upstream_tag_template: "v{version}"
 upstream_package_name: ifcfg-devname
 downstream_package_name: rust-ifcfg-devname
 
+srpm_build_deps: []
+
 jobs:
   - &copr
     job: copr_build
