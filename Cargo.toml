@@ -19,7 +19,7 @@ readme = "README.md"
 mac_address = "1.1.4"
 
 # globbing
-glob = "0.3.0"
+glob = "0.3.1"
 
 # parsing
 regex = "1.6.0"
