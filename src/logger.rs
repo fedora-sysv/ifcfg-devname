@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 use log::LevelFilter;
 use syslog::{BasicLogger, Error, Facility, Formatter3164, Logger, LoggerBackend};
 
