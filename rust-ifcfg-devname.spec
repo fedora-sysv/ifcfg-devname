@@ -9,7 +9,7 @@ Release:        %autorelease
 Summary:        Udev helper utility that provides network interface naming
 
 # Upstream license specification: GPL-3.0
-License:        GPLv3
+License:        GPL-3.0-or-later
 URL:            https://crates.io/crates/ifcfg-devname
 Source:         %{crates_source}
 
@@ -24,7 +24,7 @@ Udev helper utility that provides network interface naming using ifcfg configura
 
 %package     -n %{crate}
 Summary:        %{summary}
-License:        GPLv3 and MIT
+License:        GPL-3.0-or-later and MIT
 
 %description -n %{crate} %{_description}
 
