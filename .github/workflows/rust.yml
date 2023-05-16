@@ -111,6 +111,9 @@ jobs:
     name: Cargo Clippy
     runs-on: ubuntu-latest
 
+    permissions:
+      security-events: write
+
     steps:
       - uses: actions/checkout@v3
 
@@ -122,10 +125,29 @@ jobs:
           profile: minimal
           components: clippy
 
+      # https://github.com/psastras/sarif-rs
+      - name: Install required cargo
+        run: cargo install clippy-sarif sarif-fmt
+
+      # Clippy doesn't return non-zero exit code on error
+      # https://github.com/rust-lang/rust-clippy/issues/1209
       - name: Run Clippy
-        uses: actions-rs/cargo@v1
+        continue-on-error: true
+        run: >
+          cargo clippy
+          --no-deps
+          --all-features
+          --message-format=json | clippy-sarif | tee rust-clippy-results.sarif | sarif-fmt
+
+      - name: Upload artifact with Clippy defects in SARIF format
+        uses: actions/upload-artifact@v3
         with:
-          command: clippy
-          args: -- --no-deps
+          name: Cargo Clippy SARIF
+          path: rust-clippy-results.sarif
+
+      - name: Upload analysis results to GitHub
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: rust-clippy-results.sarif
 
 ...
