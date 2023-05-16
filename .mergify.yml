@@ -38,9 +38,9 @@ pull_request_rules:
     actions:
       merge:
         method: rebase
-        
+
   # --- --- Labels --- --- #
-  
+
   - name: Add Fedora label
     conditions:
       - base=main
@@ -48,7 +48,7 @@ pull_request_rules:
       label:
         add:
           - Fedora
-          
+
   - name: Remove Fedora label
     conditions:
       - base!=main
@@ -56,9 +56,9 @@ pull_request_rules:
       label:
         remove:
           - Fedora
-          
+
   # --- #
-  
+
   - name: Add RHEL8 label
     conditions:
       - base=rhel8
@@ -66,7 +66,7 @@ pull_request_rules:
       label:
         add:
           - RHEL 8
-          
+
   - name: Remove RHEL8 label
     conditions:
       - base!=rhel8
@@ -74,9 +74,9 @@ pull_request_rules:
       label:
         remove:
           - RHEL 8
-          
+
   # --- #
-  
+
   - name: Add RHEL9 label
     conditions:
       - base=rhel9
@@ -84,7 +84,7 @@ pull_request_rules:
       label:
         add:
           - RHEL 9
-          
+
   - name: Remove RHEL9 label
     conditions:
       - base!=rhel9
@@ -92,7 +92,7 @@ pull_request_rules:
       label:
         remove:
           - RHEL 9
-          
+
   # --- #
 
   - name: Add source label
@@ -110,8 +110,8 @@ pull_request_rules:
       label:
         remove:
           - source
-          
-  # --- # 
+
+  # --- #
 
   - name: Add Test label
     conditions:
@@ -128,7 +128,7 @@ pull_request_rules:
       label:
         remove:
           - tests
-          
+
   # --- #
 
   - name: Add configuration label
@@ -152,7 +152,7 @@ pull_request_rules:
       label:
         remove:
           - configuration
-          
+
   # --- #
 
   - name: Add documentation label
