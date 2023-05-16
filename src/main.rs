@@ -6,7 +6,6 @@ use std::path::Path;
 
 use log::*;
 
-mod lib;
 mod logger;
 mod parser;
 mod scanner;
@@ -22,7 +21,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     const CONFIG_DIR: &str = "/etc/sysconfig/network-scripts";
 
     let args: Vec<String> = env::args().collect();
-    let is_test_mode = lib::is_test_mode(&args, Args::Length as usize);
+    let is_test_mode = ifcfg_devname::is_test_mode(&args, Args::Length as usize);
 
     logger::init();
 
@@ -34,7 +33,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         }
     };
 
-    let mac_address = match lib::get_mac_address(
+    let mac_address = match ifcfg_devname::get_mac_address(
         is_test_mode,
         &args,
         Args::Mac as usize,
@@ -74,7 +73,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
         match parser::config_file(config_file_path, &simple_mac_address) {
             Ok(Some(name)) => {
-                if lib::is_like_kernel_name(&name) {
+                if ifcfg_devname::is_like_kernel_name(&name) {
                     warn!("Don't use kernel names (eth0, etc.) as new names for network devices! Used name: '{}'", name);
                 }
                 device_config_name = name;
