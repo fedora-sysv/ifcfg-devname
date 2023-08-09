@@ -22,7 +22,7 @@ mac_address = "1.1.4"
 glob = "0.3.1"
 
 # parsing
-regex = "1.6.0"
+regex = "1.7.3"
 lazy_static = "1.4.0"
 
 # logging
