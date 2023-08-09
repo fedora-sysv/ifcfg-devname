@@ -26,7 +26,7 @@ regex = "1.6.0"
 lazy_static = "1.4.0"
 
 # logging
-syslog = "^6.0.1"
+syslog = "^6.1.0"
 log = "0.4.19"
 stderrlog = "0.5.3"
 
