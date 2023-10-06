@@ -27,7 +27,7 @@ lazy_static = "1.4.0"
 
 # logging
 syslog = "^6.1.0"
-log = "0.4.19"
+log = "0.4.20"
 stderrlog = "0.5.4"
 
 
