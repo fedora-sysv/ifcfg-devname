@@ -26,10 +26,10 @@ jobs:
       fail-fast: false
       matrix:
         rust: [ stable, nightly ]
-        fedora: [ 37, 38, rawhide ]
+        fedora: [ 37, 38, 39, rawhide ]
         include:
           - rust: nightly
-            fedora: 38
+            fedora: 39
             coverage: true
 
     runs-on: ubuntu-latest
