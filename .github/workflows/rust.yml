@@ -128,7 +128,7 @@ jobs:
           --message-format=json | clippy-sarif | tee rust-clippy-results.sarif | sarif-fmt
 
       - name: Upload artifact with Clippy defects in SARIF format
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Cargo Clippy SARIF
           path: rust-clippy-results.sarif
