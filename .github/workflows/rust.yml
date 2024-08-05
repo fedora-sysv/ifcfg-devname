@@ -51,7 +51,9 @@ jobs:
         # required to be able to build rust packages: Development Tools
         # https://trendoceans.com/fix-linker-cc-not-found/
         run: |
-          sudo dnf groupinstall -y "Development Tools"
+          sudo dnf groupinstall -y "Development Tools" || \
+          sudo dnf5 group install -y development-tools || \
+          sudo dnf5 group list
 
       - name: Test
         if: ${{ matrix.coverage != true }}
