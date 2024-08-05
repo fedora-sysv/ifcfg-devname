@@ -79,6 +79,7 @@ jobs:
         with:
           files: ${{ steps.coverage.outputs.report }}
           fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   rustfmt:
     name: Cargo Fmt
