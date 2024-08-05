@@ -35,7 +35,7 @@ stderrlog = "0.5.4"
 [dev-dependencies]
 
 # command exevution
-assert_cmd = "2.0.12"
+assert_cmd = "2.0.15"
 predicates = "3.0.4"
 
 # JSON
