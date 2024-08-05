@@ -24,7 +24,7 @@ pub fn is_like_kernel_name(new_devname: &str) -> bool {
     IS_NEW_DEVNAME_ETH_LIKE.is_match(new_devname)
 }
 
-pub fn is_test_mode(params: &Vec<String>, number_params_required: usize) -> bool {
+pub fn is_test_mode(params: &[String], number_params_required: usize) -> bool {
     params.len() >= number_params_required
 }
 
